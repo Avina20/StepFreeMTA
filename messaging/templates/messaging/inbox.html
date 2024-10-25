@@ -1,0 +1,50 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <link rel="stylesheet" type="text/css" href="{% static 'messaging/inbox.css' %}">
+</head>
+
+<body>
+    <div class="navbar">
+        <h1>Messages</h1>
+        <a href="{% url 'maps:map_view' %}" class="nav-link">Home</a>
+        
+    </div>
+    <form method="get" action="">
+        {{ form.as_p }}
+        <button type="submit">Search</button>
+    </form>
+
+    <h1>Direct Messaging:</h1>
+
+    {% for messaging_partner in start_conversations %}
+    <a href="{% url 'messaging:direct_messaging' messaging_partner_name=messaging_partner %}">
+        <div class="conversation-tab">
+            <p>
+                <strong>{{messaging_partner}}</strong> <br>
+                Start Conversation
+            </p>
+        </div>
+    </a>
+    {% endfor %}
+
+    {% for messaging_partner, conversation in conversation_history.items %}
+    <a href="{% url 'messaging:direct_messaging' messaging_partner_name=messaging_partner %}">
+        <div class="conversation-tab">
+            <p>
+                <strong>{{messaging_partner}}</strong> <br>
+                {% if conversation.sender == user.username %}
+                You: {{conversation.content}} <br>
+                {% else %}
+                Them: {{conversation.content}} <br>
+                {% endif %}
+                ({{ conversation.timestamp }})
+            </p>
+        </div>
+    </a>
+    {% endfor %}
+</body>
+
+</html>
