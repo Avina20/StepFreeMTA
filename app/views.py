@@ -7,18 +7,13 @@ from django.db.models import F
 from .models import Station
 
 
-# home view
-def home_view(request):
-    return render(request, "app/home.html", {})
-
-
 # User Registration View
 def register_view(request):
     if request.method == "POST":
         form = UserCreationForm(request.POST)
         if form.is_valid():
-            user = form.save()  # Save the user to the database
-            login(request, user)  # Automatically log the user in after registration
+            user = form.save()
+            login(request, user)
             messages.success(
                 request, f"Account created successfully! Welcome, {user.username}!"
             )
@@ -26,7 +21,7 @@ def register_view(request):
         else:
             messages.error(request, "Registration failed. Please try again.")
     else:
-        form = UserCreationForm()  # Display an empty form if the request is not POST
+        form = UserCreationForm()
 
     return render(request, "app/register.html", {"form": form})
 
@@ -62,9 +57,29 @@ def logout_view(request):
 class StationsView(generic.ListView):
     model = Station
     template_name = "app/stations.html"
+    context_object_name = "station_list"
 
     def get_queryset(self):
-        return Station.objects.all().order_by(F("stop_name").asc())
+        # Get the search query from the request
+        query = self.request.GET.get("q")
+        ada_filter = self.request.GET.get("ada_filter")
+
+        # Start with all stations
+        queryset = Station.objects.all().order_by(F("stop_name").asc())
+
+        # Apply search filter if applicable
+        if query:
+            queryset = queryset.filter(stop_name__icontains=query)
+
+        # Apply ADA filter based on the selected option
+        if ada_filter == "fully":
+            queryset = queryset.filter(ada=True)
+        elif ada_filter == "partially":
+            queryset = queryset.filter(ada_southbound=True, ada_northbound=False)
+        elif ada_filter == "not":
+            queryset = queryset.filter(ada=False)
+
+        return queryset
 
 
 # Station Detail View
