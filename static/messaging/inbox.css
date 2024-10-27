@@ -1,0 +1,13 @@
+.message-left {
+    text-align: left;
+}
+
+.message-right {
+    text-align: right;
+}
+
+.conversation-tab {
+    border: 1px solid black;
+    margin: 10 auto;
+    padding: auto;
+}
