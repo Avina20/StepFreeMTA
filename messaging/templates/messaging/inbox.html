@@ -1,7 +1,21 @@
+
+{% load static %}
+
 <!DOCTYPE html>
 <html lang="en">
 
 <head>
+
+    <link rel="stylesheet" type="text/css" href="{% static 'messaging/inbox.css' %}">
+</head>
+
+<body>
+    <div class="navbar">
+        <h1>Messages</h1>
+        <a href="{% url 'maps:map_view' %}" class="nav-link">Home</a>
+        
+    </div>
+
     <style>
         .message-left {
             text-align: left;
@@ -23,6 +37,7 @@
     <a href="{% url 'maps:map_view' %}"><button>Home</button></a>
 
     <h1>Search Users</h1>
+
     <form method="get" action="">
         {{ form.as_p }}
         <button type="submit">Search</button>
