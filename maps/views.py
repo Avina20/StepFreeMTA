@@ -6,28 +6,32 @@ import os
 from math import radians, sin, cos, sqrt, atan2
 
 # Load the accessible stations data from the 'data/accessiblemta.json' file
-data_path = os.path.join(settings.BASE_DIR, 'data', 'accessiblemta.json')
-with open(data_path, 'r') as f:
+data_path = os.path.join(settings.BASE_DIR, "data", "accessiblemta.json")
+with open(data_path, "r") as f:
     subway_data = json.load(f)
+
 
 def calculate_distance(lat1, lon1, lat2, lon2):
     # Haversine formula to calculate the distance between two coordinates
     R = 6371  # Earth radius in kilometers
     dlat = radians(lat2 - lat1)
     dlon = radians(lon2 - lon1)
-    a = sin(dlat/2) * sin(dlat/2) + cos(radians(lat1)) * cos(radians(lat2)) * sin(dlon/2) * sin(dlon/2)
-    c = 2 * atan2(sqrt(a), sqrt(1-a))
+    a = sin(dlat / 2) * sin(dlat / 2) + cos(radians(lat1)) * cos(radians(lat2)) * sin(
+        dlon / 2
+    ) * sin(dlon / 2)
+    c = 2 * atan2(sqrt(a), sqrt(1 - a))
     distance = R * c
     return distance
 
+
 def find_nearest_accessible_station(lat, lng, max_distance_km=10):
     nearest_station = None
-    shortest_distance = float('inf')
+    shortest_distance = float("inf")
 
     for station in subway_data:
-        if station['ada'] == "1":  # Only consider accessible stations
-            station_lat = float(station['gtfs_latitude'])
-            station_lng = float(station['gtfs_longitude'])
+        if station["ada"] == "1":  # Only consider accessible stations
+            station_lat = float(station["gtfs_latitude"])
+            station_lng = float(station["gtfs_longitude"])
             distance = calculate_distance(lat, lng, station_lat, station_lng)
 
             if distance <= max_distance_km and distance < shortest_distance:
@@ -36,10 +40,13 @@ def find_nearest_accessible_station(lat, lng, max_distance_km=10):
 
     return nearest_station
 
+
 def map_view(request):
     context = {
         "google_maps_api_key": settings.GOOGLE_MAPS_API_KEY,
-        "subway_data": json.dumps([station for station in subway_data if station['ada'] == "1"]),  # Only accessible stations
+        "subway_data": json.dumps(
+            [station for station in subway_data if station["ada"] == "1"]
+        ),  # Only accessible stations
     }
 
     lat = request.GET.get("lat")
@@ -52,11 +59,13 @@ def map_view(request):
         nearest_station = find_nearest_accessible_station(user_lat, user_lng)
 
         if nearest_station:
-            context.update({
-                "nearest_station_name": nearest_station['stop_name'],
-                "nearest_station_lat": nearest_station['gtfs_latitude'],
-                "nearest_station_lng": nearest_station['gtfs_longitude'],
-            })
+            context.update(
+                {
+                    "nearest_station_name": nearest_station["stop_name"],
+                    "nearest_station_lat": nearest_station["gtfs_latitude"],
+                    "nearest_station_lng": nearest_station["gtfs_longitude"],
+                }
+            )
         else:
             context["nearest_station_error"] = "No accessible station found nearby."
 
