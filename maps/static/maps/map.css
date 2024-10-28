@@ -57,6 +57,8 @@ nav form {
     margin: 0;
 }
 
+
+
 /* Control panel styling */
 #controls {
     display: flex;
@@ -97,6 +99,26 @@ nav form {
 
 #controls button:hover {
     background-color: #0056b3;
+}
+
+#toggleButton {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    z-index: 5;
+    background-color: white;
+    border: 1px solid #ddd;
+    padding: 10px;
+    border-radius: 5px;
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+}
+
+#toggleButton .bi {
+    font-size: 20px;
+    margin-right: 8px;
 }
 
 /* Map and Steps container */
