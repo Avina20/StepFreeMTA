@@ -9,7 +9,7 @@ from math import radians, sin, cos, sqrt, atan2
 data_path = os.path.join(settings.BASE_DIR, "data", "accessiblemta.json")
 with open(data_path, "r") as f:
     subway_data = json.load(f)
-    
+
 # Filter accessible subway stations
 accessible_subway_data = [station for station in subway_data if station["ada"] == "1"]
 
@@ -49,15 +49,15 @@ def map_view(request):
         "google_maps_api_key": settings.GOOGLE_MAPS_API_KEY,
         "accessible_subway_data": accessible_subway_data,
     }
-    
+
     lat = request.GET.get("lat")
     lng = request.GET.get("lng")
-    station_name = request.GET.get("name") 
+    station_name = request.GET.get("name")
 
     # Restore context update for specific station
     if lat and lng and station_name:
         context.update({"lat": lat, "lng": lng, "station_name": station_name})
-        
+
     # Check if user location is provided and find nearest accessible station
     if lat and lng:
         user_lat = float(lat)
