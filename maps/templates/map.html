@@ -62,12 +62,19 @@
         <div id="route-steps">
             <h3>Route Steps</h3>
             <ul id="directions-list"></ul>
+
+            {% if nearest_station_name %}
+            <h4>Nearest Accessible Station:</h4>
+            <p><strong>{{ nearest_station_name }}</strong> (Lat: {{ nearest_station_lat }}, Lng: {{ nearest_station_lng }})</p>
+            {% elif nearest_station_error %}
+            <p>{{ nearest_station_error }}</p>
+            {% endif %}
         </div>
 
         <!-- Map on the right -->
         <div id="map"></div>
     </div>
-
+    
     <script>
         let map, directionsService, directionsRenderer, placesService, currentLocationMarker, blueDotMarker;
         let polylines = []; // Array to store polylines
@@ -75,6 +82,11 @@
         let stationsVisible = false; // Tracks visibility of subway stations
         let startLocation = null; // To store starting point coordinates
         let endLocation = null;   // To store ending point coordinates
+
+        // Define nearest accessible station data from Django context
+        const nearestStationName = "{{ nearest_station_name|escapejs }}";
+        const nearestStationLat = parseFloat("{{ nearest_station_lat }}");
+        const nearestStationLng = parseFloat("{{ nearest_station_lng }}");
 
         // Color map for NYC subway lines
         const subwayLineColors = {
@@ -180,9 +192,6 @@
                 map: map,
                 title: stationName || "Selected Station",
             });
-
-            // Find nearby stations
-            findNearbyStations(stationLocation);
         }
 
         function useCurrentLocation() {
@@ -231,26 +240,94 @@
         function toggleNearbyStations() {
             const button = document.getElementById('toggle-stations-button');
             if (!stationsVisible) {
-                // Show nearby stations
-                findNearbyStations();
+                // Show nearby accessible stations within the radius
+                findAccessibleStationsWithinRadius();
                 stationsVisible = true;
-                button.innerText = 'Hide Nearby Subway Stations';
+                button.innerText = 'Hide Nearby Accessible Subway Stations';
             } else {
-                // Hide nearby stations
+                // Hide nearby accessible stations
                 clearNearbyMarkers();
                 stationsVisible = false;
-                button.innerText = 'Show Nearby Subway Stations';
+                button.innerText = 'Show Nearby Accessible Subway Stations';
             }
         }
-
-        // Find nearby subway stations within a user-selected radius
-        function findNearbyStations(stationLocation = null) {
-            if (!stationLocation) {  
-                const center = map.getCenter();
-                searchNearbyStations(center);
-            } else {
-                searchNearbyStations(stationLocation);
+        
+        // Function to find accessible subway stations within the user-selected radius
+        function findAccessibleStationsWithinRadius() {
+            if (!navigator.geolocation) {
+                alert("Geolocation is not supported by this browser.");
+                return;
             }
+
+            navigator.geolocation.getCurrentPosition(
+                (position) => {
+                    const userLocation = {
+                        lat: position.coords.latitude,
+                        lng: position.coords.longitude
+                    };
+
+                    // Get the selected radius from the slider in meters
+                    const radius = parseFloat(document.getElementById('radius-slider').value) * 1609.34;
+
+                    // Clear existing markers
+                    clearNearbyMarkers();
+
+                    // Fetch accessible stations from the server-side context
+                    const accessibleStations = JSON.parse(`{{ subway_data|escapejs }}`);
+
+                    // Filter stations within the radius and plot them
+                    accessibleStations.forEach(station => {
+                        const stationLocation = {
+                            lat: parseFloat(station.gtfs_latitude),
+                            lng: parseFloat(station.gtfs_longitude)
+                        };
+                        const distance = calculateDistance(userLocation, stationLocation);
+
+                        if (distance <= radius) {
+                            const stationMarker = new google.maps.Marker({
+                                position: stationLocation,
+                                map: map,
+                                icon: 'https://maps.google.com/mapfiles/ms/icons/green-dot.png', // Green marker
+                                title: station.stop_name
+                            });
+
+                            // Add the station to the markers array to manage visibility
+                            nearbyStationMarkers.push(stationMarker);
+                        }
+                    });
+                },
+                (error) => {
+                    alert("Error fetching current location: " + error.message);
+                }
+            );
+        }
+
+        // Function to create a marker with an optional pixel offset
+        function createAlignedMarker(position, map, title, iconUrl, offsetX = 0, offsetY = 0) {
+            return new google.maps.Marker({
+                position: position,
+                map: map,
+                title: title,
+                icon: {
+                    url: iconUrl,
+                    anchor: new google.maps.Point(12 + offsetX, 12 + offsetY)  // Adjust these values as needed
+                }
+            });
+        }
+
+        // Utility function to calculate distance between two points in meters
+        function calculateDistance(location1, location2) {
+            const R = 6371000; // Radius of the Earth in meters
+            const dLat = (location2.lat - location1.lat) * (Math.PI / 180);
+            const dLng = (location2.lng - location1.lng) * (Math.PI / 180);
+
+            const a = 
+                Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+                Math.cos(location1.lat * (Math.PI / 180)) * Math.cos(location2.lat * (Math.PI / 180)) *
+                Math.sin(dLng / 2) * Math.sin(dLng / 2);
+
+            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+            return R * c; // Distance in meters
         }
 
         function searchNearbyStations(location) {
