@@ -1,15 +1,19 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <link rel="stylesheet" type="text/css" href="{% static 'app/station_detail.css' %}">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Station Details</title>
 </head>
 <body>
-    <h1>Station Details</h1>
+    <div class="navbar">
+        <h1>{{ station.stop_name }}</h1>
+        <a href="{% url 'app:stations' %}" class="nav-link">Back</a>
+        
+    </div>
     
-            
-    <h2>{{ station.stop_name }}</h2>
 
     <p>GTFS Stop ID: {{ station.gtfs_stop_id }} <br>
     Station ID: {{ station.station_id }} <br>
@@ -64,8 +68,7 @@
     </table>
     
     
-    <a href="{% url 'app:stations' %}">Back</a>
-    <a href="{% url 'maps:map_view' %}?lat={{ station.gtfs_latitude }}&lng={{ station.gtfs_longitude }}&name={{ station.stop_name }}">Go</a>
+    <a class = "go" href="{% url 'maps:map_view' %}?lat={{ station.gtfs_latitude }}&lng={{ station.gtfs_longitude }}&name={{ station.stop_name }}">Go</a>
 
     
 

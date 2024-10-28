@@ -1,0 +1,80 @@
+/* Reset and base styling */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    background: linear-gradient(135deg, #e0f7fa, #80deea);
+    color: #333;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    padding: 20px;
+}
+
+/* Container for central alignment */
+.container {
+    max-width: 700px;
+    width: 100%;
+    padding: 30px;
+    background-color: #ffffff;
+    border-radius: 12px;
+    box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.15);
+    text-align: center;
+}
+
+/* Header styling */
+h1 {
+    font-size: 2.5em;
+    color: #00796b;
+    margin-bottom: 20px;
+    font-weight: bold;
+    text-shadow: 1px 1px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Station list styling */
+.station-list {
+    list-style-type: none;
+    padding: 0;
+    margin: 20px 0;
+}
+
+.station-item {
+    background-color: #b2dfdb;
+    margin: 10px 0;
+    padding: 15px;
+    border-radius: 8px;
+    transition: transform 0.2s ease, background-color 0.3s;
+    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.1);
+}
+
+.station-item:hover {
+    transform: translateY(-2px);
+    background-color: #00796b;
+    color: white;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+}
+
+.station-item a {
+    color: inherit;
+    font-size: 1.2em;
+    text-decoration: none;
+    font-weight: bold;
+}
+
+.station-item a:hover {
+    color: #ffffff;
+    text-decoration: underline;
+}
+
+/* No stations text styling */
+.no-stations {
+    font-size: 1.2em;
+    color: #555;
+    margin-top: 20px;
+    font-style: italic;
+}
