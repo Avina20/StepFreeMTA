@@ -81,6 +81,10 @@
         <div id="map"></div>
     </div>
     
+    <!-- Add json_script to safely embed JSON for accessible subway data -->
+    {{ accessible_subway_data|json_script:"accessible-stations" }}
+
+
     <script>
         let map, directionsService, directionsRenderer, placesService, currentLocationMarker, blueDotMarker;
         let polylines = []; // Array to store polylines
@@ -94,6 +98,9 @@
         const nearestStationName = "{{ nearest_station_name|escapejs }}";
         const nearestStationLat = parseFloat("{{ nearest_station_lat }}");
         const nearestStationLng = parseFloat("{{ nearest_station_lng }}");
+
+        // Accessible stations data loaded from Django context safely as JSON
+        const accessibleStations = JSON.parse(document.getElementById('accessible-stations').textContent);
 
         // Color map for NYC subway lines
         const subwayLineColors = {
@@ -149,7 +156,6 @@
                 });
                 infoWindow.open(map);
             });
-    
 
             const stationLat = parseFloat("{{ lat }}");
             const stationLng = parseFloat("{{ lng }}");
@@ -307,7 +313,7 @@
                     clearNearbyMarkers();
 
                     // Fetch accessible stations from the server-side context
-                    const accessibleStations = JSON.parse(`{{ subway_data|escapejs }}`);
+                    const accessibleStations = JSON.parse(document.getElementById('accessible-stations').textContent);
 
                     // Filter stations within the radius and plot them
                     accessibleStations.forEach(station => {
@@ -435,45 +441,193 @@
             const startInput = document.getElementById('start').value;
             const endInput = document.getElementById('end').value;
 
-            let origin = startInput;
-            let destination = endInput;
+            let origin = startLocation || startInput;
+            let destination = endLocation || endInput;
 
-            // Use stored coordinates if available
-            if (startLocation) {
-                origin = startLocation;
-            }
-
-            if (endLocation) {
-                destination = endLocation;
-            }
+            console.log("Starting route from:", origin, "to:", destination); // Log start and destination
 
             if (origin && destination) {
-                // Remove current location marker before adding new markers
-                if (currentLocationMarker) {
-                    currentLocationMarker.setMap(null); // Remove pin point for the current location
+                // Geocode addresses to coordinates if needed
+                if (typeof origin === "string" || typeof destination === "string") {
+                    geocodeAndFindAccessibleStations(origin, destination);
+                } else {
+                    findAccessibleStationsAndRoute(origin, destination);
                 }
+            } else {
+                console.log("Please enter both a starting point and an ending point.");
+            }
+        }
 
-                const request = {
-                    origin: origin,
-                    destination: destination,
-                    travelMode: 'TRANSIT',
-                    transitOptions: { modes: ['SUBWAY'] } // Filter for subways
-                };
+        function geocodeAndFindAccessibleStations(origin, destination) {
+            const geocoder = new google.maps.Geocoder();
 
-                clearPolylines(); // Clear previous lines
+            if (typeof origin === "string") {
+                geocoder.geocode({ address: origin }, (results, status) => {
+                    if (status === "OK" && results[0]) {
+                        origin = {
+                            lat: results[0].geometry.location.lat(),
+                            lng: results[0].geometry.location.lng()
+                        };
+                        console.log("Geocoded origin:", origin);
 
-                directionsService.route(request, function(result, status) {
-                    if (status === 'OK') {
-                        directionsRenderer.setDirections(result); // Display default route
-                        displayRouteSteps(result); // Show route steps
-                        drawColoredOverlays(result); // Draw subway lines with intensified color
+                        if (typeof destination !== "string") {
+                            findAccessibleStationsAndRoute(origin, destination);
+                        }
                     } else {
-                        alert("Could not find route: " + status);
+                        console.log("Geocoding failed for origin:", status);
                     }
                 });
-            } else {
-                alert("Please enter both a starting point and an ending point.");
             }
+
+            if (typeof destination === "string") {
+                geocoder.geocode({ address: destination }, (results, status) => {
+                    if (status === "OK" && results[0]) {
+                        destination = {
+                            lat: results[0].geometry.location.lat(),
+                            lng: results[0].geometry.location.lng()
+                        };
+                        console.log("Geocoded destination:", destination);
+
+                        // Proceed only when both origin and destination are fully defined
+                        if (origin && typeof origin !== "string") {
+                            findAccessibleStationsAndRoute(origin, destination);
+                        }
+                    } else {
+                        console.log("Geocoding failed for destination:", status);
+                    }
+                });
+            }
+        }
+
+        function findAccessibleStationsAndRoute(origin, destination) {
+            console.log("Finding accessible stations for:", origin, destination);
+
+            // Check for valid origin and destination coordinates
+            if (!origin || typeof origin.lat !== "number" || typeof origin.lng !== "number") {
+                console.error("Error: Invalid origin coordinates.");
+                return;
+            }
+            if (!destination || typeof destination.lat !== "number" || typeof destination.lng !== "number") {
+                console.error("Error: Invalid destination coordinates.");
+                return;
+            }
+
+            // Find nearest accessible stations to origin and destination
+            const nearestStartStation = findNearestStation(origin);
+            const nearestEndStation = findNearestStation(destination);
+
+            console.log("Nearest accessible station to start:", nearestStartStation);
+            console.log("Nearest accessible station to end:", nearestEndStation);
+
+            if (!nearestStartStation || !nearestEndStation) {
+                console.error("No accessible stations found near start or end.");
+                return;
+            }
+
+            routeWithSegments(origin, nearestStartStation, nearestEndStation, destination);
+        }
+
+        function routeWithSegments(origin, startStation, endStation, destination) {
+            // Convert coordinates to LatLng format if necessary
+            const originLatLng = new google.maps.LatLng(origin.lat, origin.lng);
+            const startStationLatLng = new google.maps.LatLng(startStation.latitude, startStation.longitude);
+            const endStationLatLng = new google.maps.LatLng(endStation.latitude, endStation.longitude);
+            const destinationLatLng = new google.maps.LatLng(destination.lat, destination.lng);
+
+            // Create individual renderers for each segment
+            const walkingToStationRenderer = new google.maps.DirectionsRenderer({ 
+                map: map, 
+                suppressMarkers: false,
+                polylineOptions: { strokeColor: '#00bfff' } // Customize color for each segment if desired
+            });
+            const subwayRenderer = new google.maps.DirectionsRenderer({
+                map: map,
+                suppressMarkers: false,
+                polylineOptions: { strokeColor: '#ff4500' } // Color for subway route
+            });
+            const walkingToDestinationRenderer = new google.maps.DirectionsRenderer({
+                map: map,
+                suppressMarkers: false,
+                polylineOptions: { strokeColor: '#00bfff' } // Color for final walking route
+            });
+
+            // Step 1: Walk from origin to nearest accessible start station
+            directionsService.route({
+                origin: originLatLng,
+                destination: startStationLatLng,
+                travelMode: 'WALKING'
+            }, function(walkToStationResult, status) {
+                if (status === 'OK') {
+                    walkingToStationRenderer.setDirections(walkToStationResult);
+                    console.log("Walking route to start station successful:", walkToStationResult);
+
+                    // Step 2: Transit between accessible stations
+                    directionsService.route({
+                        origin: startStationLatLng,
+                        destination: endStationLatLng,
+                        travelMode: 'TRANSIT',
+                        transitOptions: { modes: ['SUBWAY'] }
+                    }, function(transitResult, status) {
+                        if (status === 'OK') {
+                            subwayRenderer.setDirections(transitResult);
+                            console.log("Subway transit route successful:", transitResult);
+
+                            // Step 3: Walk from nearest accessible end station to final destination
+                            directionsService.route({
+                                origin: endStationLatLng,
+                                destination: destinationLatLng,
+                                travelMode: 'WALKING'
+                            }, function(walkToDestinationResult, status) {
+                                if (status === 'OK') {
+                                    walkingToDestinationRenderer.setDirections(walkToDestinationResult);
+                                    console.log("Walking route to final destination successful:", walkToDestinationResult);
+                                } else {
+                                    console.log("Error finding walking route to destination:", status);
+                                }
+                            });
+                        } else {
+                            console.log("Error finding subway route between stations:", status);
+                        }
+                    });
+                } else {
+                    console.log("Error finding walking route to start station:", status);
+                }
+            });
+        }
+
+        function findNearestStation(location) {
+            console.log("Finding nearest station for location:", location);
+
+            if (!accessibleStations || accessibleStations.length === 0) {
+                console.log("Error: accessibleStations data is not available or empty.");
+                return null;
+            }
+
+            let nearestStation = null;
+            let shortestDistance = Infinity;
+
+            accessibleStations.forEach((station) => {
+                console.log("Station data:", station); // Log to see the structure of each station
+
+                const stationLat = parseFloat(station.gtfs_latitude); // Ensure property names match your data
+                const stationLng = parseFloat(station.gtfs_longitude);
+
+                if (isNaN(stationLat) || isNaN(stationLng)) {
+                    console.log(`Skipping station due to invalid coordinates: ${station}`);
+                    return;
+                }
+
+                const distance = calculateDistance(location, { lat: stationLat, lng: stationLng });
+                console.log(`Checking station: ${station.stop_name} at (${stationLat}, ${stationLng}) with distance: ${distance} meters`);
+
+                if (distance < shortestDistance) {
+                    shortestDistance = distance;
+                    nearestStation = { ...station, latitude: stationLat, longitude: stationLng }; // Attach as `latitude` and `longitude`
+                }
+            });
+
+            console.log("Nearest station found:", nearestStation);
+            return nearestStation;
         }
 
         function drawColoredOverlays(result) {
@@ -519,9 +673,11 @@
             polylines = [];
         }
 
-        function displayRouteSteps(result) {
+        function displayRouteSteps(result, segmentLabel) {
             const directionsList = document.getElementById('directions-list');
-            directionsList.innerHTML = ''; // Clear previous directions
+            const segmentHeader = document.createElement('h4');
+            segmentHeader.innerText = segmentLabel;
+            directionsList.appendChild(segmentHeader);
 
             const steps = result.routes[0].legs[0].steps;
             steps.forEach((step) => {
@@ -530,15 +686,12 @@
                 if (step.transit) {
                     const transit = step.transit;
                     const lineName = transit.line.short_name.replace(" Line", "").trim();
-                    const lineColor = subwayLineColors[lineName] || '#000000'; // Get color from dictionary or default
+                    const lineColor = subwayLineColors[lineName] || '#000000';
 
-                    // Create the train icon as a circular span element
+                    // Create train icon and display route step with the icon
                     const trainIcon = `<span class="train-icon" style="background-color:${lineColor};">${lineName}</span>`;
-                    
-                    // Display the route step with the train icon
                     listItem.innerHTML = `${trainIcon} Take the <span style="color:${lineColor}; font-weight: bold;">${lineName}</span> subway from <strong>${transit.departure_stop.name}</strong> to <strong>${transit.arrival_stop.name}</strong>. Follow signs for ${transit.headsign}.`;
                 } else {
-                    // Display walking or other instructions
                     listItem.innerHTML = `${step.instructions} - ${step.distance.text}`;
                 }
                 
