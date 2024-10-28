@@ -81,6 +81,10 @@
         <div id="map"></div>
     </div>
     
+    <!-- Add json_script to safely embed JSON for accessible subway data -->
+    {{ accessible_subway_data|json_script:"accessible-stations" }}
+
+
     <script>
         let map, directionsService, directionsRenderer, placesService, currentLocationMarker, blueDotMarker;
         let polylines = []; // Array to store polylines
@@ -94,6 +98,9 @@
         const nearestStationName = "{{ nearest_station_name|escapejs }}";
         const nearestStationLat = parseFloat("{{ nearest_station_lat }}");
         const nearestStationLng = parseFloat("{{ nearest_station_lng }}");
+
+        // Accessible stations data loaded from Django context safely as JSON
+        const accessibleStations = JSON.parse(document.getElementById('accessible-stations').textContent);
 
         // Color map for NYC subway lines
         const subwayLineColors = {
@@ -149,7 +156,6 @@
                 });
                 infoWindow.open(map);
             });
-    
 
             const stationLat = parseFloat("{{ lat }}");
             const stationLng = parseFloat("{{ lng }}");
@@ -307,7 +313,7 @@
                     clearNearbyMarkers();
 
                     // Fetch accessible stations from the server-side context
-                    const accessibleStations = JSON.parse(`{{ subway_data|escapejs }}`);
+                    const accessibleStations = JSON.parse(document.getElementById('accessible-stations').textContent);
 
                     // Filter stations within the radius and plot them
                     accessibleStations.forEach(station => {
