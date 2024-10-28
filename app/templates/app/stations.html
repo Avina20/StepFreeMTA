@@ -1,15 +1,18 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <link rel="stylesheet" type="text/css" href="{% static 'app/stations.css' %}">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Station Details</title>
 </head>
 <body>
-    <h1>Stations</h1>
-    <label for="return">Return to Map View</label>
-    <a href="{% url 'maps:map_view' %}"><button name="return">Return</button></a>
-
+    <div class="navbar">
+        <h1>Subway List</h1>
+        <a href="{% url 'maps:map_view' %}" class="nav-link">Home</a>
+        
+    </div>
     <form method="GET" action="">
         <input type="text" name="q" placeholder="Search for a station" value="{{ request.GET.q }}">
         <button type="submit">Search</button>
