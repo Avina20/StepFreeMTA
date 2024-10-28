@@ -63,6 +63,7 @@ def map_view(request):
         user_lat = float(lat)
         user_lng = float(lng)
         nearest_station = find_nearest_accessible_station(user_lat, user_lng)
+        print("Nearest accessible station found:", nearest_station)
 
         if nearest_station:
             context.update(
@@ -73,12 +74,14 @@ def map_view(request):
                 }
             )
         else:
+            print("No accessible station found nearby.")
             context["nearest_station_error"] = "No accessible station found nearby."
 
     if request.method == "POST":
         start = request.POST.get("start")
         end = request.POST.get("end")
 
+        print("Routing request from:", start, "to:", end)
         gmaps = googlemaps.Client(key=settings.GOOGLE_MAPS_API_KEY)
 
         try:
@@ -100,6 +103,7 @@ def map_view(request):
             )
 
         except Exception as e:
+            print("Error fetching directions:", str(e))
             context["error"] = str(e)
 
     return render(request, "map.html", context)
