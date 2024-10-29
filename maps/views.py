@@ -10,6 +10,9 @@ data_path = os.path.join(settings.BASE_DIR, "data", "accessiblemta.json")
 with open(data_path, "r") as f:
     subway_data = json.load(f)
 
+# Filter accessible subway stations
+accessible_subway_data = [station for station in subway_data if station["ada"] == "1"]
+
 
 def calculate_distance(lat1, lon1, lat2, lon2):
     # Haversine formula to calculate the distance between two coordinates
@@ -44,19 +47,23 @@ def find_nearest_accessible_station(lat, lng, max_distance_km=10):
 def map_view(request):
     context = {
         "google_maps_api_key": settings.GOOGLE_MAPS_API_KEY,
-        "subway_data": json.dumps(
-            [station for station in subway_data if station["ada"] == "1"]
-        ),  # Only accessible stations
+        "accessible_subway_data": accessible_subway_data,
     }
 
     lat = request.GET.get("lat")
     lng = request.GET.get("lng")
+    station_name = request.GET.get("name")
+
+    # Restore context update for specific station
+    if lat and lng and station_name:
+        context.update({"lat": lat, "lng": lng, "station_name": station_name})
 
     # Check if user location is provided and find nearest accessible station
     if lat and lng:
         user_lat = float(lat)
         user_lng = float(lng)
         nearest_station = find_nearest_accessible_station(user_lat, user_lng)
+        print("Nearest accessible station found:", nearest_station)
 
         if nearest_station:
             context.update(
@@ -67,12 +74,14 @@ def map_view(request):
                 }
             )
         else:
+            print("No accessible station found nearby.")
             context["nearest_station_error"] = "No accessible station found nearby."
 
     if request.method == "POST":
         start = request.POST.get("start")
         end = request.POST.get("end")
 
+        print("Routing request from:", start, "to:", end)
         gmaps = googlemaps.Client(key=settings.GOOGLE_MAPS_API_KEY)
 
         try:
@@ -94,6 +103,7 @@ def map_view(request):
             )
 
         except Exception as e:
+            print("Error fetching directions:", str(e))
             context["error"] = str(e)
 
     return render(request, "map.html", context)
