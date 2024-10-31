@@ -15,6 +15,9 @@
         {% if user.is_authenticated %}
         <h3>Hi, {{user.username}}</h3>
         <div>
+            {% if user.is_superuser %}
+            <a href="{% url 'admin_panel:user-list' %}"><button>Admin Panel</button></a>
+            {% endif %}
             <a href="{% url 'messaging:inbox' %}"><button>Messages</button></a>
             <a href="{% url 'notifications:inbox' %}"><button>Notifications</button></a>
             <a href="{% url 'app:stations' %}"><button>Subway</button></a>
