@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>User Profile</title>
+</head>
+<body>
+    <h1>{{ profile.user.username }}'s Profile</h1>
+    
+    <p><strong>Birth Date:</strong> {{ profile.birth_date|default:"Not provided" }}</p>
+    
+    <h2>Home Location</h2>
+    <p>Latitude: {{ profile.home_latitude|default:"Not provided" }}</p>
+    <p>Longitude: {{ profile.home_longitude|default:"Not provided" }}</p>
+    
+    <h2>Work Location</h2>
+    <p>Latitude: {{ profile.work_latitude|default:"Not provided" }}</p>
+    <p>Longitude: {{ profile.work_longitude|default:"Not provided" }}</p>
+
+    <h2>Favorite Station</h2>
+    {% if profile.fav_station %}
+        <p>Station: {{ profile.fav_station.stop_name }}</p>
+        <p>Source Location: {{ profile.fav_source_latitude }}, {{ profile.fav_source_longitude }}</p>
+        <p>Destination Location: {{ profile.fav_dest_latitude }}, {{ profile.fav_dest_longitude }}</p>
+    {% else %}
+        <p>No favorite station set.</p>
+    {% endif %}
+    
+    <p><strong>Reliability Score:</strong> {{ profile.score }}</p>
+</body>
+</html>
