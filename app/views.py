@@ -4,7 +4,7 @@ from django.contrib.auth import login, logout
 from django.contrib import messages
 from django.views import generic
 from django.db.models import F
-from .models import Station
+from .models import Station, Profile
 
 
 # User Registration View
@@ -86,3 +86,12 @@ class StationsView(generic.ListView):
 class StationDetailView(generic.DetailView):
     model = Station
     template_name = "app/station_detail.html"
+
+
+class ProfileView(generic.DetailView):
+    model = Profile
+    template_name = "app/profile.html"
+    context_object_name = "profile"
+
+    def get_object(self):
+        return self.request.user.profile
