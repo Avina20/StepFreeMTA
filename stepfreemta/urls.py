@@ -5,7 +5,7 @@ from django.shortcuts import redirect
 urlpatterns = [
     path("app/", include("app.urls", namespace="app")),
     path("admin/", admin.site.urls),
-    path('admin_panel/', include("admin_panel.urls", namespace="admin_panel")),
+    path("admin_panel/", include("admin_panel.urls", namespace="admin_panel")),
     path("maps/", include("maps.urls", namespace="maps")),
     path("messaging/", include("messaging.urls", namespace="messaging")),
     path("notifications/", include("notifications.urls", namespace="notifications")),
