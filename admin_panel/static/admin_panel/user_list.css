@@ -1,0 +1,126 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: Arial, sans-serif;
+}
+
+
+body {
+    background-color: #f4f7fa;
+    color: #333;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: start;
+    min-height: 100vh;
+}
+
+
+.navbar {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #333;
+    padding: 10px 20px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+}
+
+.navbar h1 {
+    font-size: 1.5em;
+    color: #fff;
+    margin: 0;
+}
+
+.navbar a {
+    background-color: #4CAF50;
+    text-decoration: none;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    font-size: 1em;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.navbar a:hover {
+    background-color: #45a049;
+}
+/* Container for the content */
+.container {
+    width: 80%;
+    max-width: 800px;
+    margin: 2rem auto;
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+    padding: 2rem;
+}
+
+/* Header */
+h1 {
+    font-size: 24px;
+    margin-bottom: 1rem;
+    color: #333;
+    text-align: center;
+}
+
+/* Table Styling */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 1rem;
+}
+
+th, td {
+    padding: 12px 15px;
+    text-align: left;
+}
+
+th {
+    background-color: #4CAF50;
+    color: white;
+    font-weight: bold;
+    text-transform: uppercase;
+}
+
+tr:nth-child(even) {
+    background-color: #f2f2f2;
+}
+
+/* Actions styling */
+.action-buttons a {
+    text-decoration: none;
+    color: white;
+    background-color: #ff4d4d;
+    padding: 6px 12px;
+    border-radius: 4px;
+    font-size: 14px;
+    transition: background-color 0.3s ease;
+}
+
+.action-buttons a:hover {
+    background-color: #d93636;
+}
+
+/* Footer link */
+.footer-link {
+    margin-top: 30px;
+    background-color: #4CAF50;
+    text-decoration: none;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    font-size: 1em;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.footer-link:hover {
+    background-color: #45a049;
+}
