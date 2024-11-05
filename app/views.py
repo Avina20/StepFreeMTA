@@ -10,6 +10,7 @@ from .forms import ProfileUpdateForm
 from django.http import JsonResponse
 import json
 
+
 # User Registration View
 def register_view(request):
     if request.method == "POST":
@@ -103,6 +104,7 @@ class ProfileView(generic.DetailView):
     def get_object(self):
         return self.request.user.profile
 
+
 @login_required
 def edit_profile(request):
     profile = request.user.profile
@@ -117,19 +119,20 @@ def edit_profile(request):
 
     return render(request, "app/edit_profile.html", {"form": form})
 
+
 @login_required
 def save_favorite_route(request):
     if request.method == "POST":
         data = json.loads(request.body)
-        start = data.get('start')
-        end = data.get('end')
+        start = data.get("start")
+        end = data.get("end")
 
         print(start)
         profile = request.user.profile
-        profile.fav_source_latitude = start['lat']
-        profile.fav_source_longitude = start['lng']
-        profile.fav_dest_latitude = end['lat']
-        profile.fav_dest_longitude = end['lng']
+        profile.fav_source_latitude = start["lat"]
+        profile.fav_source_longitude = start["lng"]
+        profile.fav_dest_latitude = end["lat"]
+        profile.fav_dest_longitude = end["lng"]
         profile.save()
 
         return JsonResponse({"success": True})
