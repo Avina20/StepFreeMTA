@@ -1,0 +1,25 @@
+<!-- alerts_content.html -->
+
+<div id="alerts-container">
+    {% if alerts_data %}
+        <div class="list-group">
+            {% for alert in alerts_data %}
+                <div class="list-group-item mb-3">
+                    <h4>{{ alert.header }}</h4>
+                    <p>{{ alert.description }}</p>
+                    {% if alert.informed_entities %}
+                        <p><strong>Relevant Entities:</strong></p>
+                        <ul>
+                            {% for entity in alert.informed_entities %}
+                                <li>Stop ID: {{ entity.stop_id }}</li>
+                                <li>Route ID: {{ entity.route_id }}</li>
+                            {% endfor %}
+                        </ul>
+                    {% endif %}
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <p>No alerts available at the moment. Please check back later.</p>
+    {% endif %}
+</div>

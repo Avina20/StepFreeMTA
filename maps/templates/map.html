@@ -24,6 +24,7 @@
             <a href="{% url 'admin_panel:user-list' %}"><button>Admin Panel</button></a>
             {% endif %}
             <a href="{% url 'messaging:inbox' %}"><button>Messages</button></a>
+            <a href="{% url 'app:alerts' %}"><button>Alerts</button></a>
             <a href="{% url 'notifications:inbox' %}"><button>Notifications</button></a>
             <a href="{% url 'app:stations' %}"><button>Subway</button></a>
             <form method="POST" action="{% url 'app:logout' %}">
@@ -34,6 +35,7 @@
         </div>
         {% else %}
         <div>
+            <a href="{% url 'app:alerts' %}"><button>Alerts</button></a>
             <a href="{% url 'notifications:inbox' %}"><button>Notifications</button></a>
             <a href="{% url 'app:login' %}"><button>Login</button></a>
             <a href="{% url 'app:register' %}"><button>Register</button></a>

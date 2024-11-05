@@ -8,7 +8,9 @@ from .models import Station, Profile
 from django.contrib.auth.decorators import login_required
 from .forms import ProfileUpdateForm
 from django.http import JsonResponse
+from google.transit import gtfs_realtime_pb2
 import json
+import requests
 
 
 # User Registration View
@@ -103,6 +105,57 @@ class ProfileView(generic.DetailView):
 
     def get_object(self):
         return self.request.user.profile
+
+
+def alerts_view(request):
+    url = (
+        "https://api-endpoint.mta.info/Dataservice/mtagtfsfeeds/camsys%2Fsubway-alerts"
+    )
+    try:
+        response = requests.get(url)
+
+        # Decode the Protobuf data
+        feed = gtfs_realtime_pb2.FeedMessage()
+        feed.ParseFromString(response.content)
+
+        # Extract and format alert data
+        alerts_data = []
+        for entity in feed.entity:
+            if entity.HasField("alert"):
+                alert = entity.alert
+                informed_entities = []
+                for informed_entity in alert.informed_entity:
+                    informed_entities.append(
+                        {
+                            "route_id": informed_entity.route_id,
+                            "stop_id": informed_entity.stop_id,
+                        }
+                    )
+                header = (
+                    alert.header_text.translation[0].text
+                    if alert.header_text.translation
+                    else None
+                )
+                description = (
+                    alert.description_text.translation[0].text
+                    if alert.description_text.translation
+                    else None
+                )
+                alerts_data.append(
+                    {
+                        "header": header,
+                        "description": description,
+                        "informed_entities": informed_entities,
+                    }
+                )
+
+    except Exception as e:
+        alerts_data = None
+        print("Error fetching alerts data:", e)
+
+    if request.headers.get("X-Requested-With") == "XMLHttpRequest":
+        return JsonResponse({"alerts_data": alerts_data})
+    return render(request, "app/alerts.html", {"alerts_data": alerts_data})
 
 
 @login_required
