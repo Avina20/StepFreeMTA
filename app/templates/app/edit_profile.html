@@ -1,0 +1,46 @@
+<form method="post">
+    {% csrf_token %}
+    {{ form.birth_date.label_tag }} {{ form.birth_date }}
+    
+    <h3>Set Home Location on Map</h3>
+    <p>Click on the map to set the location.</p>
+    <div id="home-map" style="width: 100%; height: 300px;"></div>
+    {{ form.home_latitude.label_tag }} {{ form.home_latitude }}
+    {{ form.home_longitude.label_tag }} {{ form.home_longitude }}
+
+    <h3>Set Work Location on Map</h3>
+    <div id="work-map" style="width: 100%; height: 300px;"></div>
+    {{ form.work_latitude.label_tag }} {{ form.work_latitude }}
+    {{ form.work_longitude.label_tag }} {{ form.work_longitude }}
+
+    {{ form.fav_station.label_tag }} {{ form.fav_station }}  <!-- Dropdown for stations -->
+
+    <button type="submit">Save</button>
+</form>
+
+<script>
+    // JavaScript to integrate map (e.g., Google Maps API)
+    function initMap() {
+        var homeMap = new google.maps.Map(document.getElementById("home-map"), {
+            center: { lat: 40.7128, lng: -74.0060 },
+            zoom: 12
+        });
+        
+        var workMap = new google.maps.Map(document.getElementById("work-map"), {
+            center: { lat: 40.7128, lng: -74.0060 },
+            zoom: 12
+        });
+
+        homeMap.addListener("click", function(e) {
+            document.getElementById("id_home_latitude").value = e.latLng.lat();
+            document.getElementById("id_home_longitude").value = e.latLng.lng();
+        });
+
+        workMap.addListener("click", function(e) {
+            document.getElementById("id_work_latitude").value = e.latLng.lat();
+            document.getElementById("id_work_longitude").value = e.latLng.lng();
+        });
+    }
+</script>
+
+<script src="https://maps.googleapis.com/maps/api/js?key={{ google_maps_api_key }}&libraries=places&callback=initMap" async defer></script>

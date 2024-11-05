@@ -51,6 +51,10 @@
         <label for="end">Ending Point:</label>
         <input type="text" id="end" placeholder="Enter destination" onchange="resetEndLocation()">
         
+        <button id="saveFavoriteButton" onclick="saveFavorite()">
+            ❤️
+        </button>
+
         <button onclick="findRoute()">Find Route</button>
 
         <!-- Slider Container with Fixed Width for Radius Value -->
@@ -746,6 +750,37 @@
                 showAllStations = false;
             }
             setStationFilter();
+        }
+
+        //Favourite a route
+        function saveFavorite() {
+            if (startLocation && endLocation) {
+                fetch("{% url 'app:save_favorite_route' %}", {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': getCSRFToken()
+                    },
+                    body: JSON.stringify({ start: startLocation, end: endLocation })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert("Favorite route saved successfully!");
+                    } else {
+                        alert("Failed to save favorite route.");
+                    }
+                })
+                .catch(error => console.error("Error:", error));
+            } else {
+                alert("Please enter both start and destination locations.");
+            }
+        }
+
+        // CSRF token function if required
+        function getCSRFToken() {
+            const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+            return csrfToken;
         }
 
 

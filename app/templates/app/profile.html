@@ -6,26 +6,46 @@
 </head>
 <body>
     <h1>{{ profile.user.username }}'s Profile</h1>
+
+    <div style="text-align: right;">
+        <a href="{% url 'app:edit_profile' %}" class="btn btn-primary">Edit Profile</a>
+    </div>
     
     <p><strong>Birth Date:</strong> {{ profile.birth_date|default:"Not provided" }}</p>
     
     <h2>Home Location</h2>
-    <p>Latitude: {{ profile.home_latitude|default:"Not provided" }}</p>
-    <p>Longitude: {{ profile.home_longitude|default:"Not provided" }}</p>
+    {% if profile.home_latitude %}
+        <p>{ {{ profile.home_latitude }} , {{ profile.home_longitude }} }  </p>
+    {% else %}
+        <p>Not set</p>
+    {% endif %}
+   
     
     <h2>Work Location</h2>
-    <p>Latitude: {{ profile.work_latitude|default:"Not provided" }}</p>
-    <p>Longitude: {{ profile.work_longitude|default:"Not provided" }}</p>
+    {% if profile.work_latitude %}
+        <p>{ {{ profile.work_latitude }} , {{ profile.work_longitude }} }  </p>
+    {% else %}
+        <p>Not set</p>
+    {% endif %}
 
     <h2>Favorite Station</h2>
     {% if profile.fav_station %}
         <p>Station: {{ profile.fav_station.stop_name }}</p>
-        <p>Source Location: {{ profile.fav_source_latitude }}, {{ profile.fav_source_longitude }}</p>
-        <p>Destination Location: {{ profile.fav_dest_latitude }}, {{ profile.fav_dest_longitude }}</p>
     {% else %}
         <p>No favorite station set.</p>
     {% endif %}
+
+    <h2>Favorite Route</h2>
+    {% if profile.fav_dest_latitude and profile.fav_dest_longitude %}
+        <p>Source : { {{ profile.fav_source_latitude }} , {{ profile.fav_source_longitude }} }</p>
+        <p>Destination : { {{ profile.fav_dest_latitude }} , {{ profile.fav_dest_longitude }} }</p>
+    {% else %}
+        <p>Not set</p>
+    {% endif %}
+    
+    
     
     <p><strong>Reliability Score:</strong> {{ profile.score }}</p>
+    
 </body>
 </html>
