@@ -13,4 +13,5 @@ urlpatterns = [
     path(
         "stations/<int:pk>/", views.StationDetailView.as_view(), name="station_detail"
     ),
+    path("alerts/", views.alerts_view, name="alerts"),
 ]
