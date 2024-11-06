@@ -18,7 +18,13 @@
     <p>GTFS Stop ID: {{ station.gtfs_stop_id }} <br>
     Station ID: {{ station.station_id }} <br>
      Accessible: {{ station.ada }}</p>
-
+    
+    <h2>Ratings</h2>
+    {% if avg_rating %}
+        <p>Station Average Rating: <strong>{{ avg_rating|floatformat:1}} / 5</strong></p>
+    {% else %}
+        <p>No ratings yet</p>
+    {% endif %}
 
     <table border="1">
         <tr>
