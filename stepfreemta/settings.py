@@ -49,6 +49,7 @@ INSTALLED_APPS = [
     "messaging",
     "notifications",
     "admin_panel",
+    "reporting",
 ]
 
 MIDDLEWARE = [
