@@ -5,6 +5,7 @@ from django.contrib import messages
 from django.views import generic
 from django.db.models import F
 from .models import Station, Profile, Review
+from django.db.models import Avg
 from django.contrib.auth.decorators import login_required
 from .forms import ProfileUpdateForm, RatingForm
 from django.http import JsonResponse
