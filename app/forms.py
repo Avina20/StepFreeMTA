@@ -18,6 +18,7 @@ class ProfileUpdateForm(forms.ModelForm):
             "fav_station": forms.Select(),  # Dropdown for stations
         }
 
+
 class RatingForm(forms.ModelForm):
     class Meta:
         model = Review

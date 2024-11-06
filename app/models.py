@@ -60,6 +60,7 @@ class Profile(models.Model):
     def __str__(self):
         return self.user.username
 
+
 class Review(models.Model):
     station = models.ForeignKey(
         Station, on_delete=models.CASCADE, related_name="rating"
