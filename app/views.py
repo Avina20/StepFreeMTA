@@ -1,4 +1,4 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
 from django.contrib.auth import login, logout
 from django.contrib import messages
@@ -6,7 +6,7 @@ from django.views import generic
 from django.db.models import F
 from .models import Station, Profile, Review
 from django.contrib.auth.decorators import login_required
-from .forms import ProfileUpdateForm
+from .forms import ProfileUpdateForm, RatingForm
 from django.http import JsonResponse
 from google.transit import gtfs_realtime_pb2
 import json
