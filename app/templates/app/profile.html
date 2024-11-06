@@ -5,6 +5,7 @@
     <meta charset="UTF-8">
     <title>User Profile</title>
     <link rel="stylesheet" href="{% static 'app/profile.css' %}">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css">
 </head>
 <body>
     <div class="profile-container">
@@ -48,6 +49,10 @@
         {% if profile.fav_dest_latitude and profile.fav_dest_longitude %}
             <p>Source : { {{ profile.fav_source_latitude }} , {{ profile.fav_source_longitude }} }</p>
             <p>Destination : { {{ profile.fav_dest_latitude }} , {{ profile.fav_dest_longitude }} }</p>
+            <!-- Map icon with link to the map page -->
+            <a href="{% url 'maps:map_view' %}" target="_blank">
+                <i class="bi bi-geo-fill"></i>
+            </a>
         {% else %}
             <p>Not set</p>
         {% endif %}

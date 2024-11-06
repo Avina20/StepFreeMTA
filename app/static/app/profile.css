@@ -94,3 +94,9 @@ form button:hover {
     border-radius: 8px;
     border: 1px solid #ccc;
 }
+
+.icon::before {
+    display: inline-block;
+    text-rendering: auto;
+    -webkit-font-smoothing: antialiased;
+  }
