@@ -1,46 +1,67 @@
-<form method="post">
-    {% csrf_token %}
-    {{ form.birth_date.label_tag }} {{ form.birth_date }}
-    
-    <h3>Set Home Location on Map</h3>
-    <p>Click on the map to set the location.</p>
-    <div id="home-map" style="width: 100%; height: 300px;"></div>
-    {{ form.home_latitude.label_tag }} {{ form.home_latitude }}
-    {{ form.home_longitude.label_tag }} {{ form.home_longitude }}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Edit Profile</title>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'app/profile.css' %}">
+</head>
+<body>
+    <div class="profile-container">
+        <h1>Edit Profile</h1>
+        <form method="post">
+            {% csrf_token %}
+            <h2>Set Date of Birth</h2> 
+            {{ form.birth_date }}
+            
+            <h2>Set Home Location</h2>
+            <p>Click on the map to set the location.</p>
+            <div id="home-map" style="width: 100%; height: 300px;"></div>
+            {{ form.home_latitude.label_tag }} {{ form.home_latitude }}
+            {{ form.home_longitude.label_tag }} {{ form.home_longitude }}
 
-    <h3>Set Work Location on Map</h3>
-    <div id="work-map" style="width: 100%; height: 300px;"></div>
-    {{ form.work_latitude.label_tag }} {{ form.work_latitude }}
-    {{ form.work_longitude.label_tag }} {{ form.work_longitude }}
+            <h2>Set Work Location</h2>
+            <div id="work-map" style="width: 100%; height: 300px;"></div>
+            {{ form.work_latitude.label_tag }} {{ form.work_latitude }}
+            {{ form.work_longitude.label_tag }} {{ form.work_longitude }}
 
-    {{ form.fav_station.label_tag }} {{ form.fav_station }}  <!-- Dropdown for stations -->
+            <h2>Set Favourite Station</h2>
+            {{ form.fav_station }}  <!-- Dropdown for stations -->
 
-    <button type="submit">Save</button>
-</form>
+            <button type="submit" style="margin-right: 10px;">Save</button>
 
-<script>
-    // JavaScript to integrate map (e.g., Google Maps API)
-    function initMap() {
-        var homeMap = new google.maps.Map(document.getElementById("home-map"), {
-            center: { lat: 40.7128, lng: -74.0060 },
-            zoom: 12
-        });
-        
-        var workMap = new google.maps.Map(document.getElementById("work-map"), {
-            center: { lat: 40.7128, lng: -74.0060 },
-            zoom: 12
-        });
+            <div style="text-align: center; margin-top: 10px;">
+                <a href="{% url 'app:profile' %}" class="btn btn-primary">Discard</a>
+            </div>
 
-        homeMap.addListener("click", function(e) {
-            document.getElementById("id_home_latitude").value = e.latLng.lat();
-            document.getElementById("id_home_longitude").value = e.latLng.lng();
-        });
+        </form>
+    </div>
 
-        workMap.addListener("click", function(e) {
-            document.getElementById("id_work_latitude").value = e.latLng.lat();
-            document.getElementById("id_work_longitude").value = e.latLng.lng();
-        });
-    }
-</script>
+    <script>
+        // JavaScript to integrate map (e.g., Google Maps API)
+        function initMap() {
+            var homeMap = new google.maps.Map(document.getElementById("home-map"), {
+                center: { lat: 40.7128, lng: -74.0060 },
+                zoom: 12
+            });
+            
+            var workMap = new google.maps.Map(document.getElementById("work-map"), {
+                center: { lat: 40.7128, lng: -74.0060 },
+                zoom: 12
+            });
 
-<script src="https://maps.googleapis.com/maps/api/js?key={{ google_maps_api_key }}&libraries=places&callback=initMap" async defer></script>
+            homeMap.addListener("click", function(e) {
+                document.getElementById("id_home_latitude").value = e.latLng.lat();
+                document.getElementById("id_home_longitude").value = e.latLng.lng();
+            });
+
+            workMap.addListener("click", function(e) {
+                document.getElementById("id_work_latitude").value = e.latLng.lat();
+                document.getElementById("id_work_longitude").value = e.latLng.lng();
+            });
+        }
+    </script>
+
+    <script src="https://maps.googleapis.com/maps/api/js?key={{ google_maps_api_key }}&libraries=places&callback=initMap" async defer></script>
+</body>
+</html>
