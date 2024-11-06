@@ -1,5 +1,5 @@
 from django import forms
-from .models import Profile
+from .models import Profile, Review
 
 
 class ProfileUpdateForm(forms.ModelForm):
@@ -17,3 +17,8 @@ class ProfileUpdateForm(forms.ModelForm):
             "birth_date": forms.DateInput(attrs={"type": "date"}),
             "fav_station": forms.Select(),  # Dropdown for stations
         }
+
+class RatingForm(forms.ModelForm):
+    class Meta:
+        model = Review
+        fields = ["rating"]
