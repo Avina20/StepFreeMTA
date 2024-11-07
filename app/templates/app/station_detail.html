@@ -25,6 +25,12 @@
         <p>No ratings yet</p>
     {% endif %}
 
+    {% for recent_comment in comments %}
+        <p>{{ recent_comment.comment }} - {{ recent_comment.created_at }}</p>
+    {% empty %}
+        <p>No comments to display</p>
+    {% endfor %}
+
     <table border="1">
         <tr>
             <th>Line</th>
@@ -78,6 +84,8 @@
             <option value="4">4 - Very Good</option>
             <option value="5">5 - Excellent</option>
         </select>
+        <label for ='comment'>Leave a comment.</label>
+            <textarea id="comment" name="comment" rows="4" cols="50" placeholder="Write your comment here..."></textarea>
         <br><button type="submit">Submit</button>
     </form>
 {% else %}

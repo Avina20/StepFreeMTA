@@ -113,6 +113,7 @@ def station_detail(request, station_id):
                 # Update the existing review
                 rating = user_reviewed
                 rating.rating = form.cleaned_data["rating"]
+                rating.comment = form.cleaned_data["comment"]
                 rating.save()
             else:
                 rating = form.save(commit=False)
@@ -131,6 +132,7 @@ def station_detail(request, station_id):
 
     ratings = station.rating.all()  # Get all ratings for this station
     # Calculate the average rating for this station
+
     if ratings is None:
         avg_rating = 0
     else:
@@ -138,12 +140,18 @@ def station_detail(request, station_id):
             "rating__avg"
         ]
 
+    # Find last 5 comments
+    last_five_comments = Review.objects.filter(station=station).order_by(
+                                                                '-created_at'
+                                                                )[:5]
+
     return render(
         request,
         "app/station_detail.html",
         {
             "station": station,
             "ratings": ratings,
+            "comments":last_five_comments,
             "form": form,
             "avg_rating": avg_rating,
         },
