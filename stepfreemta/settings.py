@@ -27,11 +27,12 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = "django-insecure-3p3&hsk(jm2byoct@&rk=+*&l5%&wbrybne&iy9*cu871^1mh%"
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 ALLOWED_HOSTS = [
     "127.0.0.1",
     "stepfreemta-env.eba-je3qmwfd.us-west-2.elasticbeanstalk.com",
+    "stepfreemta.com",
 ]
 
 # Application definition
@@ -48,6 +49,7 @@ INSTALLED_APPS = [
     "messaging",
     "notifications",
     "admin_panel",
+    "reporting",
 ]
 
 MIDDLEWARE = [
@@ -138,3 +140,9 @@ STATIC_ROOT = os.path.join(BASE_DIR, "static")
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+# Settings to enable HTTPS
+SECURE_SSL_REDIRECTS = True
+SECURE_HSTS_SECONDS = 31536000
+SECURE_HSTS_PRELOAD = True
+SECURE_HSTS_INCLUDE_SUBDOMAINS = True

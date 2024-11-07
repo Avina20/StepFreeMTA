@@ -9,5 +9,6 @@ urlpatterns = [
     path("maps/", include("maps.urls", namespace="maps")),
     path("messaging/", include("messaging.urls", namespace="messaging")),
     path("notifications/", include("notifications.urls", namespace="notifications")),
+    path("reporting/", include("reporting.urls", namespace="reporting")),
     path("", lambda request: redirect("maps:map_view"), name="landing_page"),
 ]

@@ -1,5 +1,5 @@
-[![Build Status](https://app.travis-ci.com/gcivil-nyu-org/wed-fall24-team4.svg?token=jwUNqiGUzS6Hs3vuhjTX&branch=dev-will)](https://app.travis-ci.com/github/gcivil-nyu-org/wed-fall24-team4)
-[![Coverage Status](https://coveralls.io/repos/github/gcivil-nyu-org/wed-fall24-team4/badge.svg?branch=dev-will)](https://coveralls.io/github/gcivil-nyu-org/wed-fall24-team4?branch=dev-will)
+[![Build Status](https://app.travis-ci.com/gcivil-nyu-org/wed-fall24-team4.svg?token=jwUNqiGUzS6Hs3vuhjTX&branch=develop)](https://app.travis-ci.com/github/gcivil-nyu-org/wed-fall24-team4)
+[![Coverage Status](https://coveralls.io/repos/github/gcivil-nyu-org/wed-fall24-team4/badge.svg?branch=develop)](https://coveralls.io/github/gcivil-nyu-org/wed-fall24-team4?branch=develop)
 
 ### Usage
 
@@ -19,7 +19,7 @@
 
 4. **Run the following commands:**
    ```bash
-   python manage.py makemigrations app maps messaging notifications
+   python manage.py makemigrations app maps messaging notifications reporting
    python manage.py migrate 
    ```
     Then:
@@ -28,3 +28,5 @@
     ```
 
 Link to website: [http://stepfreemta-env.eba-je3qmwfd.us-west-2.elasticbeanstalk.com/]
+
+Link to HTTPS site: [https://stepfreemta-env.eba-je3qmwfd.us-west-2.elasticbeanstalk.com/maps/]

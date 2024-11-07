@@ -1,0 +1,102 @@
+/* profile.css */
+
+/* General Page Layout */
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f9f9f9;
+    color: #333;
+    margin: 20px;
+}
+
+/* Container for main profile content */
+.profile-container {
+    background-color: #ffffff;
+    border-radius: 8px;
+    padding: 20px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    max-width: 600px;
+    margin: auto;
+}
+
+/* Header */
+h1 {
+    color: #0056b3;
+    text-align: center;
+}
+
+/* Sub-headings */
+h2 {
+    color: #007bff;
+    font-size: 1.2em;
+    margin-top: 20px;
+    border-bottom: 1px solid #ddd;
+    padding-bottom: 5px;
+}
+
+/* Button Styling */
+.btn {
+    padding: 10px 15px;
+    background-color: #007bff;
+    color: #ffffff;
+    text-decoration: none;
+    border-radius: 5px;
+    transition: background-color 0.3s;
+}
+
+.btn:hover {
+    background-color: #0056b3;
+}
+
+/* Labels and data */
+strong {
+    font-weight: bold;
+}
+
+p {
+    margin: 8px 0;
+}
+
+/* Form Styling */
+form {
+    display: flex;
+    flex-direction: column;
+    max-width: 600px;
+    margin: auto;
+}
+
+form label {
+    margin-top: 15px;
+    font-weight: bold;
+}
+
+form input[type="text"], form select, form button {
+    padding: 10px;
+    margin-top: 5px;
+    margin-bottom: 10px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+}
+
+form button {
+    background-color: #007bff;
+    color: #fff;
+    font-size: 16px;
+    max-width: 600px;
+}
+
+form button:hover {
+    background-color: #0056b3;
+}
+
+/* Map Container */
+#home-map, #work-map {
+    margin-top: 15px;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+}
+
+.icon::before {
+    display: inline-block;
+    text-rendering: auto;
+    -webkit-font-smoothing: antialiased;
+  }
