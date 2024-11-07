@@ -141,9 +141,9 @@ def station_detail(request, station_id):
         ]
 
     # Find last 5 comments
-    last_five_comments = Review.objects.filter(station=station).order_by(
-                                                                '-created_at'
-                                                                )[:5]
+    last_five_comments = Review.objects.filter(station=station).order_by("-created_at")[
+        :5
+    ]
 
     return render(
         request,
@@ -151,7 +151,7 @@ def station_detail(request, station_id):
         {
             "station": station,
             "ratings": ratings,
-            "comments":last_five_comments,
+            "comments": last_five_comments,
             "form": form,
             "avg_rating": avg_rating,
         },
