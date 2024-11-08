@@ -167,8 +167,6 @@
                 "https://data.ny.gov/resource/39hk-dx4f.geojson",
             );
 
-            window.initMap = initMap;
-
             // Initial filter to show only accessible stations
             setStationFilter();
 
@@ -242,6 +240,8 @@
                 }
             }
         }
+
+        window.initMap = initMap;
 
         // Function to center map, place marker on the selected station, and find nearby stations
         function centerMapOnStation(lat, lng, stationName) {
