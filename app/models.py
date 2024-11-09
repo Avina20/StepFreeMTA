@@ -59,3 +59,31 @@ class Profile(models.Model):
 
     def __str__(self):
         return self.user.username
+
+
+class Review(models.Model):
+    station = models.ForeignKey(
+        Station, on_delete=models.CASCADE, related_name="rating"
+    )
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+
+    RATING_CHOICES = [
+        (1, "1 - Poor"),
+        (2, "2 - Fair"),
+        (3, "3 - Good"),
+        (4, "4 - Very Good"),
+        (5, "5 - Excellent"),
+    ]
+
+    rating = models.IntegerField(choices=RATING_CHOICES)
+    comment = models.TextField(blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = [
+            "user",
+            "station",
+        ]  # Enforce uniqueness of user-station combination
+
+    def __str__(self):
+        return f"Review by {self.user} on {self.station}"

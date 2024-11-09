@@ -80,6 +80,9 @@ class RegisterViewTest(TestCase):
 
 
 class StationsAccessibilityTest(TestCase):
+    def setUp(self):
+        self.user = User.objects.create_user(username="testuser", password="password")
+
     @classmethod
     def setUpTestData(cls):
         # Load stations from accessiblemta.json
@@ -109,6 +112,10 @@ class StationsAccessibilityTest(TestCase):
             )
 
     def test_station_accessibility(self):
+        # Log in so station details can be properly tested
+        login = self.client.login(username="testuser", password="password")
+        self.assertTrue(login)
+
         # Test for a station marked as accessible
         station = Station.objects.get(
             gtfs_stop_id="R03"
@@ -124,6 +131,10 @@ class StationsAccessibilityTest(TestCase):
         self.assertContains(response, "Accessible: False")
 
     def test_go_button_redirect(self):
+        # Login so test can run properly
+        login = self.client.login(username="testuser", password="password")
+        self.assertTrue(login)
+
         # Test clicking the "Go" button and ensure correct redirection to map view with coordinates # noqa: E501
         station = Station.objects.get(gtfs_stop_id="R03")  # Example: Astoria Blvd
         response = self.client.get(reverse("app:station_detail", args=[station.id]))
