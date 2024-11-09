@@ -134,7 +134,7 @@ class StationsAccessibilityTest(TestCase):
         # Login so test can run properly
         login = self.client.login(username="testuser", password="password")
         self.assertTrue(login)
-        
+
         # Test clicking the "Go" button and ensure correct redirection to map view with coordinates # noqa: E501
         station = Station.objects.get(gtfs_stop_id="R03")  # Example: Astoria Blvd
         response = self.client.get(reverse("app:station_detail", args=[station.id]))

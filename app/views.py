@@ -98,6 +98,7 @@ class StationDetailView(generic.DetailView):
     model = Station
     template_name = "app/station_detail.html"
 
+
 @login_required
 def station_detail(request, station_id):
     station = get_object_or_404(Station, id=station_id)
