@@ -11,10 +11,13 @@
     <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
 </head>
 <body>
-    <div class="container mt-4">
-        <h1 class="mb-4">Real-Time MTA Alerts</h1>
-        <a href="{% url 'maps:map_view' %}"><button class="btn btn-primary mb-4">Return to Map</button></a>
+    <!-- Black Bar with Title and Home Button -->
+    <div class="navbar">
+        <h1>Real-Time MTA Alerts</h1>
+        <a href="{% url 'maps:map_view' %}" class="btn btn-success">Home</a>
+    </div>
 
+    <div class="container mt-4">
         <!-- Alerts container to be updated with AJAX -->
         <div id="alerts-container">
             {% include "app/alerts_content.html" %}
