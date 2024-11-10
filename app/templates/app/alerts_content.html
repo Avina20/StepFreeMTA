@@ -4,19 +4,32 @@
     {% if alerts_data %}
         <div class="list-group">
             {% for alert in alerts_data %}
-                <div class="list-group-item mb-3">
-                    <h4>{{ alert.header }}</h4>
-                    <p>{{ alert.description }}</p>
-                    {% if alert.informed_entities %}
-                        <p><strong>Relevant Entities:</strong></p>
-                        <ul>
-                            {% for entity in alert.informed_entities %}
-                                <li>Stop ID: {{ entity.stop_id }}</li>
-                                <li>Route ID: {{ entity.route_id }}</li>
-                            {% endfor %}
-                        </ul>
-                    {% endif %}
-                </div>
+                {% if alert.header or alert.description %}
+                    <div class="list-group-item mb-3">
+                        {% if alert.header %}
+                            <h4>{{ alert.header }}</h4>
+                        {% endif %}
+                        {% if alert.description %}
+                            <p>{{ alert.description }}</p>
+                        {% endif %}
+                        {% if alert.start_time %}
+                            <p><small>Started at: {{ alert.start_time }}</small></p>
+                        {% endif %}
+                        {% if alert.informed_entities %}
+                            <p><strong>Relevant Entities:</strong></p>
+                            <ul>
+                                {% for entity in alert.informed_entities %}
+                                    {% if entity.stop_id %}
+                                        <li>Stop ID: {{ entity.stop_id }}</li>
+                                    {% endif %}
+                                    {% if entity.route_id %}
+                                        <li>Route ID: {{ entity.route_id }}</li>
+                                    {% endif %}
+                                {% endfor %}
+                            </ul>
+                        {% endif %}
+                    </div>
+                {% endif %}
             {% endfor %}
         </div>
     {% else %}
