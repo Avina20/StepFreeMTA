@@ -3,20 +3,48 @@
     {% load static %}
 <head>
     <title>Google Map Route Finder</title>
+
+    <!-- Script to check if Google Maps API has loaded and reload if not -->
     <script>
-        if (!sessionStorage.getItem('mapRefreshed')) {
-            sessionStorage.setItem('mapRefreshed', 'true');
-            location.reload(true); // Force reload to fix map display issues
-        }
+        (function() {
+            var maxAttempts = 10;  // Maximum number of reload attempts
+            var attempts = sessionStorage.getItem('mapLoadAttempts') || 0;
+
+            function checkMapLoaded() {
+                if (typeof google !== 'undefined' && typeof google.maps !== 'undefined') {
+                    // Map is loaded
+                    sessionStorage.removeItem('mapLoadAttempts');
+                } else {
+                    // Map not loaded
+                    attempts++;
+                    if (attempts < maxAttempts) {
+                        sessionStorage.setItem('mapLoadAttempts', attempts);
+                        console.log('Map not loaded, reloading page. Attempt ' + attempts);
+                        location.reload();
+                    } else {
+                        sessionStorage.removeItem('mapLoadAttempts');
+                        alert('Unable to load the map after ' + maxAttempts + ' attempts. Please check your internet connection or try again later.');
+                    }
+                }
+            }
+
+            // Delay check to allow time for scripts to load
+            window.onload = function() {
+                setTimeout(checkMapLoaded, 300); // Check after 0.3 seconds
+            };
+        })();
     </script>
 
+    <!-- Google Maps API script with async and defer -->
     <script src="https://maps.googleapis.com/maps/api/js?key={{ google_maps_api_key }}&libraries=places&callback=initMap" async defer></script>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css">
-    <!-- Add Bootstrap CSS and JS (needed for dropdown functionality) -->
+
+    <!-- Bootstrap CSS and JS -->
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css">
     <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/js/bootstrap.bundle.min.js"></script>
 
+    <!-- Custom CSS -->
     <link rel="stylesheet" type="text/css" href="{% static 'maps/map.css' %}">
 
 </head>
@@ -121,7 +149,7 @@
         let stationsVisible = false; // Tracks visibility of subway stations
         let startLocation = null; // To store starting point coordinates
         let endLocation = null;   // To store ending point 
-        let stationVisibility = 'all'; // Initial state for for accessible data layer
+        let stationVisibility = 'all'; // Initial state for accessible data layer
 
         // Define nearest accessible station data from Django context
         const nearestStationName = "{{ nearest_station_name|escapejs }}";
@@ -152,7 +180,9 @@
             'Q': '#FCCC0A',   // Yellow
             'R': '#FCCC0A',   // Yellow
             'J': '#996633',   // Brown
-            'Z': '#996633',   // Brown
+            'Z': '#996633',   // Brown,
+            'W': '#FCCC0A',   // Yellow
+            '7': '#B933AD',   // Purple
         };
 
         let selectedStationMarker = null;
@@ -764,7 +794,7 @@
             setStationFilter();
         }
 
-        //Favourite a route
+        // Favourite a route
         function saveFavorite() {
             if (startLocation && endLocation) {
                 fetch("{% url 'app:save_favorite_route' %}", {
@@ -794,7 +824,6 @@
             const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
             return csrfToken;
         }
-
 
     </script>
 </body>
