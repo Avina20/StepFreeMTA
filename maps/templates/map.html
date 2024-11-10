@@ -7,7 +7,7 @@
     <!-- Script to check if Google Maps API has loaded and reload if not -->
     <script>
         (function() {
-            var maxAttempts = 3;  // Maximum number of reload attempts
+            var maxAttempts = 10;  // Maximum number of reload attempts
             var attempts = sessionStorage.getItem('mapLoadAttempts') || 0;
 
             function checkMapLoaded() {
