@@ -1,0 +1,149 @@
+/* alerts.css */
+
+/* General Reset */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #eef3f8;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-height: 100vh;
+    padding: 20px;
+}
+
+/* Navbar */
+.navbar {
+    width: 100%;
+    max-width: 1200px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #333;
+    padding: 10px 20px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+}
+
+.navbar h1 {
+    font-size: 1.5em;
+    color: #fff;
+    margin: 0;
+}
+
+.navbar a, .go {
+    background-color: #4CAF50;
+    text-decoration: none;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    font-size: 1em;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.navbar a:hover, .go:hover {
+    background-color: #45a049;
+}
+
+/* Container */
+.container {
+    width: 90%;
+    max-width: 900px;
+    background-color: #ffffff;
+    padding: 30px;
+    border-radius: 8px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+/* Headings */
+h1 {
+    font-size: 2.2em;
+    color: #31708f;
+    text-align: center;
+    margin-bottom: 1.5rem;
+}
+
+h2, h4 {
+    font-size: 1.8em;
+    color: #005b96;
+    margin-bottom: 1rem;
+    text-align: center;
+}
+
+/* Paragraph Styling */
+p {
+    color: #555555;
+    line-height: 1.6;
+    margin-bottom: 1rem;
+}
+
+/* Alerts List */
+.list-group {
+    width: 100%;
+}
+
+.list-group-item {
+    background-color: #f8f9fa;
+    border: 1px solid #e1e8ed;
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 20px;
+}
+
+.list-group-item h4 {
+    font-size: 1.5em;
+    color: #005b96;
+    margin-bottom: 10px;
+}
+
+.list-group-item p {
+    color: #333333;
+}
+
+.list-group-item ul {
+    list-style-type: none;
+    padding-left: 0;
+}
+
+.list-group-item ul li {
+    margin-bottom: 5px;
+}
+
+.list-group-item small {
+    color: #888888;
+}
+
+/* Button Styling */
+button, .go {
+    padding: 10px 20px;
+    background-color: #005b96;
+    color: #ffffff;
+    border: none;
+    border-radius: 5px;
+    font-weight: bold;
+    text-decoration: none;
+    transition: background-color 0.3s ease;
+    cursor: pointer;
+}
+
+button:hover, .go:hover {
+    background-color: #003f6b;
+}
+
+/* Return to Map Button */
+.btn-primary {
+    background-color: #005b96;
+    border-color: #005b96;
+}
+
+.btn-primary:hover {
+    background-color: #003f6b;
+    border-color: #003f6b;
+}
