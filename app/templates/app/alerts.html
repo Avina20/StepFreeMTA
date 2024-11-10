@@ -32,14 +32,13 @@
                     if (response.alerts_data && response.alerts_data.length > 0) {
                         $('#alerts-container').html('');
 
-                        // Optionally, you can display all alerts or just the last one
                         let alertContent = '<div class="list-group">';
                         response.alerts_data.forEach(function(alert) {
                             alertContent += `
-                                <div class="list-group-item mb-3">
-                                    <h4>${alert.header}</h4>
-                                    <p>${alert.description}</p>
-                                </div>
+                            <div class="list-group-item mb-3">
+                                <h4>${alert.header}</h4>
+                                ${alert.description ? `<p>${alert.description}</p>` : ''}
+                            </div>
                             `;
                         });
                         alertContent += '</div>';
