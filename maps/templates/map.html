@@ -6,33 +6,121 @@
 
     <!-- Script to check if Google Maps API has loaded and reload if not -->
     <script>
-        (function() {
-            var maxAttempts = 10;  // Maximum number of reload attempts
-            var attempts = sessionStorage.getItem('mapLoadAttempts') || 0;
+        // Define initMap in the global scope
+        function initMap() {
+            // Your existing initMap code
+            map = new google.maps.Map(document.getElementById('map'), {
+                zoom: 13,
+                center: { lat: 40.7128, lng: -74.0060 }, // Default to New York City
+            });
 
-            function checkMapLoaded() {
-                if (typeof google !== 'undefined' && typeof google.maps !== 'undefined') {
-                    // Map is loaded
-                    sessionStorage.removeItem('mapLoadAttempts');
-                } else {
-                    // Map not loaded
-                    attempts++;
-                    if (attempts < maxAttempts) {
-                        sessionStorage.setItem('mapLoadAttempts', attempts);
-                        console.log('Map not loaded, reloading page. Attempt ' + attempts);
-                        location.reload();
-                    } else {
-                        sessionStorage.removeItem('mapLoadAttempts');
-                        alert('Unable to load the map after ' + maxAttempts + ' attempts. Please check your internet connection or try again later.');
-                    }
+            map.data.loadGeoJson(
+                "https://data.ny.gov/resource/39hk-dx4f.geojson",
+            );
+
+            // Initial filter to show only accessible stations
+            setStationFilter();
+
+            // Add a click listener to display station information
+            map.data.addListener('click', function(event) {
+                const stationName = event.feature.getProperty('stop_name');
+                const latitude = event.feature.getGeometry().get().lat();
+                const longitude = event.feature.getGeometry().get().lng();
+                document.getElementById('end').value = stationName;
+                endLocation = { lat: latitude, lng: longitude }; // Store coordinates
+
+                // Display the station name and coordinates in an info window
+                const infoWindow = new google.maps.InfoWindow({
+                    content: `<h3>${stationName}</h3><p>Latitude: ${latitude}<br>Longitude: ${longitude}</p>`,
+                    position: { lat: latitude, lng: longitude }
+                });
+                infoWindow.open(map);
+            });
+
+            const stationLat = parseFloat("{{ lat }}");
+            const stationLng = parseFloat("{{ lng }}");
+            const stationName = "{{ station_name }}";
+
+            directionsService = new google.maps.DirectionsService();
+            directionsRenderer = new google.maps.DirectionsRenderer({
+                map: map,
+                suppressPolylines: false, // Do not suppress default polylines
+                suppressMarkers: false,
+                draggable: false,
+                polylineOptions: {strokeColor: '#000000', strokeOpacity: 0.1, strokeWeight: 5}
+            });
+
+            // Initialize PlacesService
+            placesService = new google.maps.places.PlacesService(map);
+
+            if (stationLat && stationLng) {
+                document.getElementById("start").value = stationName;
+                centerMapOnStation(stationLat, stationLng, stationName, map);
+            } else {
+                // Try to get the user's current location on map load
+                if (navigator.geolocation) {
+                    navigator.geolocation.getCurrentPosition(
+                        (position) => {
+                            const userLocation = {
+                                lat: position.coords.latitude,
+                                lng: position.coords.longitude
+                            };
+
+                            // Center map on user's location
+                            map.setCenter(userLocation);
+
+                            // Add a small blue dot to represent user's location
+                            blueDotMarker = new google.maps.Marker({
+                                position: userLocation,
+                                map: map,
+                                icon: {
+                                    path: google.maps.SymbolPath.CIRCLE,
+                                    scale: 8,
+                                    fillColor: '#4285F4',  // Google blue color
+                                    fillOpacity: 1,
+                                    strokeColor: '#ffffff', // White border
+                                    strokeWeight: 2
+                                },
+                                title: "You are here"
+                            });
+                        },
+                        (error) => {
+                            alert("Error fetching current location: " + error.message);
+                        }
+                    );
                 }
             }
+        }
 
-            // Delay check to allow time for scripts to load
-            window.onload = function() {
-                setTimeout(checkMapLoaded, 300); // Check after 0.3 seconds
-            };
-        })();
+        window.initMap = initMap;
+
+        // (function() {
+        //     var maxAttempts = 10;  // Maximum number of reload attempts
+        //     var attempts = sessionStorage.getItem('mapLoadAttempts') || 0;
+
+        //     function checkMapLoaded() {
+        //         if (typeof google !== 'undefined' && typeof google.maps !== 'undefined') {
+        //             // Map is loaded
+        //             sessionStorage.removeItem('mapLoadAttempts');
+        //         } else {
+        //             // Map not loaded
+        //             attempts++;
+        //             if (attempts < maxAttempts) {
+        //                 sessionStorage.setItem('mapLoadAttempts', attempts);
+        //                 console.log('Map not loaded, reloading page. Attempt ' + attempts);
+        //                 location.reload();
+        //             } else {
+        //                 sessionStorage.removeItem('mapLoadAttempts');
+        //                 alert('Unable to load the map after ' + maxAttempts + ' attempts. Please check your internet connection or try again later.');
+        //             }
+        //         }
+        //     }
+
+        //     // Delay check to allow time for scripts to load
+        //     window.onload = function() {
+        //         setTimeout(checkMapLoaded, 300); // Check after 0.3 seconds
+        //     };
+        // })();
     </script>
 
     <!-- Google Maps API script with async and defer -->
