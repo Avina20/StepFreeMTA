@@ -59,7 +59,7 @@ def map_view(request):
     # Restore context update for specific station
     if lat and lng and station_name:
         context.update({"lat": lat, "lng": lng, "station_name": station_name})
-    
+
     if dest_lat and dest_lng:
         context.update({"dest_lat": dest_lat, "dest_lng": dest_lng})
 
