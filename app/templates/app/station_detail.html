@@ -70,7 +70,7 @@
         </tr>
     </table>
     
-    <a class = "go" href="{% url 'maps:map_view' %}?lat={{ station.gtfs_latitude }}&lng={{ station.gtfs_longitude }}&name={{ station.stop_name }}">Go</a>
+    <a class = "go" href="{% url 'maps:map_view' %}?source_lat={{ station.gtfs_latitude }}&source_lng={{ station.gtfs_longitude }}&name={{ station.stop_name }}">Go</a>
 
 <h2>Leave a Rating</h2>
 {% if user.is_authenticated %}

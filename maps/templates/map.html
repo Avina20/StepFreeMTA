@@ -307,6 +307,8 @@
             const stationLat = parseFloat("{{ lat }}");
             const stationLng = parseFloat("{{ lng }}");
             const stationName = "{{ station_name }}";
+            const destStationLat = parseFloat("{{ dest_lat }}");
+            const destStationLng = parseFloat("{{ dest_lng }}");
 
             directionsService = new google.maps.DirectionsService();
             directionsRenderer = new google.maps.DirectionsRenderer({
@@ -323,6 +325,12 @@
             if (stationLat && stationLng) {
                 document.getElementById("start").value = stationName;
                 centerMapOnStation(stationLat, stationLng, stationName, map);
+
+                if (destStationLat && destStationLng) {
+                    document.getElementById("end").value = stationName;
+                    endLocation = { lat: destStationLat, lng: destStationLng };
+                    findRoute();
+                }
             } else {
                 // Try to get the user's current location on map load
                 if (navigator.geolocation) {
@@ -617,6 +625,7 @@
                             lat: results[0].geometry.location.lat(),
                             lng: results[0].geometry.location.lng()
                         };
+                        startLocation = origin; // Store coordinates
                         console.log("Geocoded origin:", origin);
 
                         if (typeof destination !== "string") {
@@ -635,6 +644,7 @@
                             lat: results[0].geometry.location.lat(),
                             lng: results[0].geometry.location.lng()
                         };
+                        endLocation = destination; // Store coordinates
                         console.log("Geocoded destination:", destination);
 
                         // Proceed only when both origin and destination are fully defined
@@ -852,7 +862,7 @@
         }
 
         let showAccessibleOnly = false;
-        let showAllStations = true;
+        let showAllStations = false;
 
         function setStationFilter() {
             map.data.setStyle(function(feature) {

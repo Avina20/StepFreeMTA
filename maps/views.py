@@ -50,13 +50,18 @@ def map_view(request):
         "accessible_subway_data": accessible_subway_data,
     }
 
-    lat = request.GET.get("lat")
-    lng = request.GET.get("lng")
+    lat = request.GET.get("source_lat")
+    lng = request.GET.get("source_lng")
     station_name = request.GET.get("name")
+    dest_lat = request.GET.get("dest_lat")
+    dest_lng = request.GET.get("dest_lng")
 
     # Restore context update for specific station
     if lat and lng and station_name:
         context.update({"lat": lat, "lng": lng, "station_name": station_name})
+
+    if dest_lat and dest_lng:
+        context.update({"dest_lat": dest_lat, "dest_lng": dest_lng})
 
     # Check if user location is provided and find nearest accessible station
     if lat and lng:
