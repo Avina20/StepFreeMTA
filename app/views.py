@@ -99,36 +99,36 @@ class StationDetailView(generic.DetailView):
     template_name = "app/station_detail.html"
 
 
-@login_required
 def station_detail(request, station_id):
     station = get_object_or_404(Station, id=station_id)
     form = RatingForm(request.POST)
 
-    # Check if the user has already reviewed this station
-    user_reviewed = Review.objects.filter(station=station, user=request.user).first()
-
-    if request.method == "POST":
-        if form.is_valid():
-            if user_reviewed:
-                # Update the existing review
-                rating = user_reviewed
-                rating.rating = form.cleaned_data["rating"]
-                rating.comment = form.cleaned_data["comment"]
-                rating.save()
+    if request.user.is_authenticated:
+        user_reviewed = Review.objects.filter(
+            station=station, user=request.user
+        ).first()
+        if request.method == "POST":
+            if form.is_valid():
+                if user_reviewed:
+                    # Update the existing review
+                    rating = user_reviewed
+                    rating.rating = form.cleaned_data["rating"]
+                    rating.comment = form.cleaned_data["comment"]
+                    rating.save()
+                else:
+                    rating = form.save(commit=False)
+                    rating.station = station
+                    rating.user = request.user
+                    rating.save()
+                messages.success(request, "Your review has been added!")
+                return redirect("app:station_detail", station_id=station.id)
             else:
-                rating = form.save(commit=False)
-                rating.station = station
-                rating.user = request.user
-                rating.save()
-            messages.success(request, "Your review has been added!")
-            return redirect("app:station_detail", station_id=station.id)
+                print("Form errors: ", form.errors)
+                messages.error(request, "Something went wrong")
         else:
-            print("Form errors: ", form.errors)
-            messages.error(request, "Something went wrong")
-    else:
-        form = RatingForm(
-            instance=user_reviewed
-        )  # Pre-populate the form with the user's existing review (if any)
+            form = RatingForm(
+                instance=user_reviewed
+            )  # Pre-populate the form with the user's existing review (if any)
 
     ratings = station.rating.all()  # Get all ratings for this station
     # Calculate the average rating for this station
