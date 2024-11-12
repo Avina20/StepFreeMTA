@@ -276,11 +276,13 @@
         let selectedStationMarker = null;
 
         function initMap() {
+            // Initialize the map centered on New York City
             map = new google.maps.Map(document.getElementById('map'), {
                 zoom: 13,
                 center: { lat: 40.7128, lng: -74.0060 }, // Default to New York City
             });
 
+            // Load GeoJSON data for subway stations
             map.data.loadGeoJson(
                 "https://data.ny.gov/resource/39hk-dx4f.geojson",
             );
@@ -307,8 +309,6 @@
             const stationLat = parseFloat("{{ lat }}");
             const stationLng = parseFloat("{{ lng }}");
             const stationName = "{{ station_name }}";
-            const destStationLat = parseFloat("{{ dest_lat }}");
-            const destStationLng = parseFloat("{{ dest_lng }}");
 
             directionsService = new google.maps.DirectionsService();
             directionsRenderer = new google.maps.DirectionsRenderer({
@@ -325,12 +325,6 @@
             if (stationLat && stationLng) {
                 document.getElementById("start").value = stationName;
                 centerMapOnStation(stationLat, stationLng, stationName, map);
-
-                if (destStationLat && destStationLng) {
-                    document.getElementById("end").value = stationName;
-                    endLocation = { lat: destStationLat, lng: destStationLng };
-                    findRoute();
-                }
             } else {
                 // Try to get the user's current location on map load
                 if (navigator.geolocation) {
@@ -365,8 +359,18 @@
                     );
                 }
             }
-        }
 
+            // **Enable or Disable the "Show Nearby Subway Stations" Button**
+            const toggleStationsButton = document.getElementById('toggle-stations-button');
+            if (navigator.geolocation) {
+                // Geolocation is available, enable the button
+                toggleStationsButton.disabled = false;
+            } else {
+                // Geolocation is not available, disable the button and inform the user
+                toggleStationsButton.disabled = true;
+                toggleStationsButton.innerText = 'Geolocation not available';
+            }
+        }
         window.initMap = initMap;
 
         // Function to center map, place marker on the selected station, and find nearby stations
@@ -658,32 +662,82 @@
             }
         }
 
-        function findAccessibleStationsAndRoute(origin, destination) {
-            console.log("Finding accessible stations for:", origin, destination);
-
-            // Check for valid origin and destination coordinates
-            if (!origin || typeof origin.lat !== "number" || typeof origin.lng !== "number") {
-                console.error("Error: Invalid origin coordinates.");
-                return;
-            }
-            if (!destination || typeof destination.lat !== "number" || typeof destination.lng !== "number") {
-                console.error("Error: Invalid destination coordinates.");
+        function findAccessibleStationsWithinRadius() {
+            if (!navigator.geolocation) {
+                alert("Geolocation is not supported by this browser.");
                 return;
             }
 
-            // Find nearest accessible stations to origin and destination
-            const nearestStartStation = findNearestStation(origin);
-            const nearestEndStation = findNearestStation(destination);
+            navigator.geolocation.getCurrentPosition(
+                (position) => {
+                    const userLocation = {
+                        lat: position.coords.latitude,
+                        lng: position.coords.longitude
+                    };
 
-            console.log("Nearest accessible station to start:", nearestStartStation);
-            console.log("Nearest accessible station to end:", nearestEndStation);
+                    // Get the selected radius from the slider in meters
+                    const radius = parseFloat(document.getElementById('radius-slider').value) * 1609.34; // Convert miles to meters
 
-            if (!nearestStartStation || !nearestEndStation) {
-                console.error("No accessible stations found near start or end.");
-                return;
-            }
+                    // Clear existing markers
+                    clearNearbyMarkers();
 
-            routeWithSegments(origin, nearestStartStation, nearestEndStation, destination);
+                    // Fetch accessible stations from the server-side context
+                    const accessibleStations = JSON.parse(document.getElementById('accessible-stations').textContent);
+
+                    // Filter stations within the radius and plot them
+                    accessibleStations.forEach(station => {
+                        const stationLocation = {
+                            lat: parseFloat(station.gtfs_latitude),
+                            lng: parseFloat(station.gtfs_longitude)
+                        };
+                        const distance = calculateDistance(userLocation, stationLocation);
+
+                        if (distance <= radius) {
+                            const stationMarker = new google.maps.Marker({
+                                position: stationLocation,
+                                map: map,
+                                icon: 'https://maps.google.com/mapfiles/ms/icons/green-dot.png', // Green marker
+                                title: station.stop_name
+                            });
+
+                            // Add the station to the markers array to manage visibility
+                            nearbyStationMarkers.push(stationMarker);
+                        }
+                    });
+
+                    // Optionally, center the map on the user's location
+                    map.setCenter(userLocation);
+
+                    // Optionally, add a marker for the user's location
+                    if (currentLocationMarker) {
+                        currentLocationMarker.setMap(null);
+                    }
+
+                    currentLocationMarker = new google.maps.Marker({
+                        position: userLocation,
+                        map: map,
+                        title: "Your Location",
+                        icon: {
+                            path: google.maps.SymbolPath.CIRCLE,
+                            scale: 6,
+                            fillColor: '#4285F4', // Google blue color
+                            fillOpacity: 1,
+                            strokeColor: '#ffffff', // White border
+                            strokeWeight: 2
+                        }
+                    });
+                },
+                (error) => {
+                    alert("Error fetching current location: " + error.message);
+
+                    if (error.code === error.PERMISSION_DENIED) {
+                        // User denied geolocation, disable the button and update its text
+                        const toggleStationsButton = document.getElementById('toggle-stations-button');
+                        toggleStationsButton.disabled = true;
+                        toggleStationsButton.innerText = 'Geolocation not enabled';
+                    }
+                }
+            );
         }
 
         function routeWithSegments(origin, startStation, endStation, destination) {
