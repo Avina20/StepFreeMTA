@@ -187,13 +187,6 @@
             const stationName = "{{ station_name }}";
 
             directionsService = new google.maps.DirectionsService();
-            directionsRenderer = new google.maps.DirectionsRenderer({
-                map: map,
-                suppressPolylines: false, // Do not suppress default polylines
-                suppressMarkers: false,
-                draggable: false,
-                polylineOptions: {strokeColor: '#000000', strokeOpacity: 0.1, strokeWeight: 5}
-            });
 
             // Initialize PlacesService
             placesService = new google.maps.places.PlacesService(map);
