@@ -93,3 +93,26 @@ class MessagingTests(TestCase):
         self.assertEqual(response.status_code, 200)
 
         self.assertEqual(Message.objects.count(), 3)
+
+    def test_blocking_user(self):
+        self.client.force_login(self.user)
+        url = reverse("messaging:inbox")
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+
+        self.assertEqual(
+            response.context["conversation_history"][self.user2.username]["content"],
+            "message 2",
+        )
+        self.assertEqual(response.context["start_conversations"], [])
+
+        url = reverse("messaging:block_user", args=[self.user2.username])
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 302)
+
+        url = reverse("messaging:inbox")
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+
+        self.assertEqual(response.context["conversation_history"], {})
+        self.assertEqual(response.context["start_conversations"], [])
