@@ -26,6 +26,10 @@
         <h2>Home Location</h2>
         {% if profile.home_latitude %}
             <p>{ {{ profile.home_latitude }} , {{ profile.home_longitude }} }  </p>
+            <!-- Map icon with link to the map page -->
+            <a href="{% url 'maps:map_view' %}?source_lat={{ profile.home_latitude }}&source_lng={{ profile.home_longitude }}&name=Home" target="_blank">
+                <i class="bi bi-geo-fill"></i> 
+            </a>
         {% else %}
             <p>Not set</p>
         {% endif %}
@@ -34,6 +38,10 @@
         <h2>Work Location</h2>
         {% if profile.work_latitude %}
             <p>{ {{ profile.work_latitude }} , {{ profile.work_longitude }} }  </p>
+            <!-- Map icon with link to the map page -->
+            <a href="{% url 'maps:map_view' %}?source_lat={{ profile.work_latitude }}&source_lng={{ profile.work_longitude }}&name=Work" target="_blank">
+                <i class="bi bi-geo-fill"></i>
+            </a>
         {% else %}
             <p>Not set</p>
         {% endif %}
@@ -41,6 +49,11 @@
         <h2>Favorite Station</h2>
         {% if profile.fav_station %}
             <p>Station: {{ profile.fav_station.stop_name }}</p>
+            <a href="{% url 'app:station_detail' profile.fav_station.station_id %}">View Station Details</a>
+            <!-- Map icon with link to the map page -->
+            <a href="{% url 'maps:map_view' %}?source_lat={{ profile.fav_station.gtfs_latitude }}&source_lng={{ profile.fav_station.gtfs_longitude }}&name={{ profile.fav_station.stop_name }}" target="_blank">
+                <i class="bi bi-geo-fill"></i>
+            </a>
         {% else %}
             <p>No favorite station set.</p>
         {% endif %}
@@ -50,7 +63,7 @@
             <p>Source : { {{ profile.fav_source_latitude }} , {{ profile.fav_source_longitude }} }</p>
             <p>Destination : { {{ profile.fav_dest_latitude }} , {{ profile.fav_dest_longitude }} }</p>
             <!-- Map icon with link to the map page -->
-            <a href="{% url 'maps:map_view' %}" target="_blank">
+            <a href="{% url 'maps:map_view' %}?source_lat={{ profile.fav_source_latitude }}&source_lng={{ profile.fav_source_longitude }}&dest_lat={{ profile.fav_dest_latitude }}&dest_lng={{ profile.fav_dest_longitude }}&name=Favourite" target="_blank">
                 <i class="bi bi-geo-fill"></i>
             </a>
         {% else %}
