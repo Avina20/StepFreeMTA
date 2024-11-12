@@ -1,4 +1,3 @@
-
 {% load static %}
 
 <!DOCTYPE html>
@@ -14,6 +13,9 @@
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script>
         function fetchMessages() {
+            if(dialog.open){
+                return
+            }
             $.get("{% url 'messaging:get_new_messages' messaging_partner_name=messaging_partner%}", function (data) {
                 let messagesContainer = $('#messages-container');
                 messagesContainer.empty();
@@ -27,9 +29,9 @@
                                 (${message.timestamp})
                             </p>
                         </div>`
-                    ); 
+                    );
                 });
-                if(messagesContainer.children().length === 0 ){
+                if (messagesContainer.children().length === 0) {
                     messagesContainer.append(`<p>No messages to show.</p>`);
                 }
             });
@@ -41,7 +43,7 @@
             fetchMessages();
             setInterval(fetchMessages, 1000); // Fetch messages every 1 seconds
 
-            $('form').on('submit', function(e) {
+            $('form').on('submit', function (e) {
                 e.preventDefault();
                 const content = $('textarea[name="content"]').val();
                 if (content) {
@@ -52,7 +54,7 @@
                             'content': content,
                             'csrfmiddlewaretoken': '{{ csrf_token }}'
                         },
-                        success: function(response) {
+                        success: function (response) {
                             if (response.status === 'Message sent') {
                                 $('textarea[name="content"]').val('');
                                 fetchMessages();
@@ -90,16 +92,46 @@
             </p>
         </div>
         {% empty %}
-            <p>No messages to show.</p>
+        <p>No messages to show.</p>
         {% endfor %}
     </div>
 
-    <h1>Send Message</h1>
+    <!-- <h1>Send Message</h1> -->
     <form method="POST">
         {% csrf_token %}
-        <textarea name="content" rows="2"></textarea><br>
+        <textarea name="content" rows="2"></textarea>
         <button type="submit">Send</button>
     </form>
+
+    <button class="red" id="block-user-button">Block User</button>
+
+    <dialog id="dialog-box">
+        <p>Are you sure want to block the {{messaging_partner}}?</p>
+        <div class="buttons-div">
+            <button id="dialog-box-close">No</button>
+            <a href="{% url 'messaging:block_user' messaging_partner_name=messaging_partner %}"><button id="block-user-confirm" class="red" type="submit">Yes</button></a>
+        </div>
+    </dialog>
+
+    <script>
+        const dialog = document.querySelector("dialog");
+        const showButton = document.getElementById("block-user-button");
+        const closeButton = document.getElementById("dialog-box-close");
+
+        // "Show the dialog" button opens the dialog modally
+        showButton.addEventListener("click", () => {
+            dialog.showModal();
+            dialog.classList.toggle("open");
+        });
+
+        // "Close" button closes the dialog
+        closeButton.addEventListener("click", () => {
+            dialog.classList.toggle("open");
+            dialog.close();
+
+        });
+    </script>
+
 </body>
 
 </html>

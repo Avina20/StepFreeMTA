@@ -19,4 +19,9 @@ urlpatterns = [
         views.get_new_messages,
         name="get_new_messages",
     ),
+    path(
+        "block_user/<str:messaging_partner_name>/",
+        views.block_user,
+        name="block_user",
+    ),
 ]
