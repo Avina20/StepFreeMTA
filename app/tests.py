@@ -1,6 +1,6 @@
 from django.test import TestCase
 from django.urls import reverse
-from .models import Station
+from .models import Station, Review
 from django.contrib.auth.models import User
 from django.conf import settings
 import json
@@ -144,3 +144,109 @@ class StationsAccessibilityTest(TestCase):
         )
 
         self.assertContains(response, f'href="{go_button_url}"')
+
+
+class ReviewTests(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        # Load stations from accessiblemta.json
+        with open(settings.BASE_DIR / "data/accessiblemta.json", "r") as f:
+            stations_data = json.load(f)
+
+        # Create station objects in the test database
+        for station in stations_data:
+            Station.objects.create(
+                gtfs_stop_id=station["gtfs_stop_id"],
+                station_id=station["station_id"],
+                complex_id=station["complex_id"],
+                division=station["division"],
+                line=station["line"],
+                stop_name=station["stop_name"],
+                borough=station["borough"],
+                cbd=station["cbd"] == "TRUE",
+                daytime_routes=station["daytime_routes"],
+                structure=station["structure"],
+                gtfs_latitude=float(station["gtfs_latitude"]),
+                gtfs_longitude=float(station["gtfs_longitude"]),
+                ada=station["ada"] == "1",
+                ada_northbound=station["ada_northbound"] == "1",
+                ada_southbound=station["ada_southbound"] == "1",
+                georeference_latitude=float(station["georeference"]["coordinates"][1]),
+                georeference_longitude=float(station["georeference"]["coordinates"][0]),
+            )
+
+    def setUp(self):
+        # Create a test user and a test station
+        self.user = User.objects.create_user(
+            username="testuser", password="password123"
+        )
+        self.station = Station.objects.get(gtfs_stop_id="R03")
+        self.rate_url = reverse("app:station_detail", args=[self.station.id])
+
+    def test_leave_new_review(self):
+        # Log in the test user
+        self.client.login(username="testuser", password="password123")
+
+        # Submit a new review with a rating of 4
+        response = self.client.post(self.rate_url, {"rating": 4})
+
+        # Check if the rating was created
+        rating = Review.objects.filter(user=self.user, station=self.station).first()
+        self.assertIsNotNone(rating)  # Ensure the rating was created
+        self.assertEqual(rating.rating, 4)  # Check that the rating value is correct
+        self.assertEqual(
+            response.status_code, 302
+        )  # Check for a redirect after success
+
+    def test_leave_new_comment(self):
+        # Log in the test user
+        self.client.login(username="testuser", password="password123")
+
+        # Submit a new comment 'Nice station'
+        response = self.client.post(
+            self.rate_url, {"rating": 4, "comment": "Nice station"}
+        )
+
+        # Check that commnet was created
+        rating = Review.objects.filter(user=self.user, station=self.station).first()
+        self.assertIsNotNone(rating)  # Ensure rating with comment was created
+        self.assertEqual(rating.comment, "Nice station")  # Ensure comment is correct
+        self.assertEqual(response.status_code, 302)
+
+    def test_update_existing_review(self):
+        # Log in the test user and leave an initial review
+        self.client.login(username="testuser", password="password123")
+        Review.objects.create(
+            user=self.user, station=self.station, rating=3
+        )  # Initial rating
+
+        # Submit a new review with a different rating value
+        response = self.client.post(self.rate_url, {"rating": 5})
+
+        # Check that the existing review was updated
+        rating = Review.objects.get(user=self.user, station=self.station)
+        self.assertEqual(rating.rating, 5)  # Ensure the rating was updated to 5
+        self.assertEqual(
+            response.status_code, 302
+        )  # Check for a redirect after success
+
+    def test_update_existing_comment(self):
+        # Log in the test user and leave an initial review
+        self.client.login(username="testuser", password="password123")
+        Review.objects.create(
+            user=self.user, station=self.station, rating=3, comment="OK station"
+        )  # Initial rating
+
+        # Submit a new review with a different rating value
+        response = self.client.post(
+            self.rate_url, {"rating": 5, "comment": "Perfect station"}
+        )
+
+        # Check that the existing review was updated
+        rating = Review.objects.get(user=self.user, station=self.station)
+        self.assertEqual(
+            rating.comment, "Perfect station"
+        )  # Ensure the rating was updated to 5
+        self.assertEqual(
+            response.status_code, 302
+        )  # Check for a redirect after success
