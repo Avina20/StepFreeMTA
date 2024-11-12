@@ -140,7 +140,7 @@ class StationsAccessibilityTest(TestCase):
         response = self.client.get(reverse("app:station_detail", args=[station.id]))
         go_button_url = (
             reverse("maps:map_view")
-            + f"?lat={station.gtfs_latitude}&lng={station.gtfs_longitude}&name={station.stop_name}"  # noqa: E501
+            + f"?source_lat={station.gtfs_latitude}&source_lng={station.gtfs_longitude}&name={station.stop_name}"  # noqa: E501
         )
 
         self.assertContains(response, f'href="{go_button_url}"')
