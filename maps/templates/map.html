@@ -617,6 +617,7 @@
                             lat: results[0].geometry.location.lat(),
                             lng: results[0].geometry.location.lng()
                         };
+                        startLocation = origin; // Store coordinates
                         console.log("Geocoded origin:", origin);
 
                         if (typeof destination !== "string") {
@@ -635,6 +636,7 @@
                             lat: results[0].geometry.location.lat(),
                             lng: results[0].geometry.location.lng()
                         };
+                        endLocation = destination; // Store coordinates
                         console.log("Geocoded destination:", destination);
 
                         // Proceed only when both origin and destination are fully defined
@@ -852,7 +854,7 @@
         }
 
         let showAccessibleOnly = false;
-        let showAllStations = true;
+        let showAllStations = false;
 
         function setStationFilter() {
             map.data.setStyle(function(feature) {
