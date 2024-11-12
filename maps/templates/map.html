@@ -105,8 +105,9 @@
     {{ accessible_subway_data|json_script:"accessible-stations" }}
 
     <script>
-        let map, directionsService, directionsRenderer, placesService, currentLocationMarker, blueDotMarker;
+        let map, directionsService, placesService, currentLocationMarker, blueDotMarker;
         let polylines = []; // Array to store polylines
+        let directionsRenderers = []; // Array to store DirectionsRenderer instances
         let nearbyStationMarkers = []; // Array to store nearby subway station markers
         let stationsVisible = false; // Tracks visibility of subway stations
         let startLocation = null; // To store starting point coordinates
@@ -577,11 +578,16 @@
             );
         }
 
+        function clearDirectionsRenderers() {
+            directionsRenderers.forEach(renderer => renderer.setMap(null));
+            directionsRenderers = []; // Reset the array
+        }
+
         function routeWithSegments(origin, startStation, endStation, destination) {
             // Clear previous polylines and directions
             clearPolylines();
-            directionsRenderer.set('directions', null);
-            
+            clearDirectionsRenderers();
+
             // Convert coordinates to LatLng format if necessary
             const originLatLng = new google.maps.LatLng(origin.lat, origin.lng);
             const startStationLatLng = new google.maps.LatLng(startStation.latitude, startStation.longitude);
@@ -590,25 +596,30 @@
 
             document.getElementById('directions-list').innerHTML = "";
 
-            // Create individual renderers for each segment
+            // Create individual renderers for each segment and store them
             const walkingToStationRenderer = new google.maps.DirectionsRenderer({ 
                 map: map, 
                 suppressMarkers: false,
                 preserveViewport: true,
-                polylineOptions: { strokeColor: '#00bfff' } // Customize color for each segment if desired
+                polylineOptions: { strokeColor: '#00bfff' }
             });
+            directionsRenderers.push(walkingToStationRenderer); // Store the renderer
+
             const subwayRenderer = new google.maps.DirectionsRenderer({
                 map: map,
                 suppressMarkers: false,
                 preserveViewport: true,
-                polylineOptions: { strokeColor: '#ff4500' } // Color for subway route
+                polylineOptions: { strokeColor: '#ff4500' }
             });
+            directionsRenderers.push(subwayRenderer); // Store the renderer
+
             const walkingToDestinationRenderer = new google.maps.DirectionsRenderer({
                 map: map,
                 suppressMarkers: false,
                 preserveViewport: true,
-                polylineOptions: { strokeColor: '#00bfff' } // Color for final walking route
+                polylineOptions: { strokeColor: '#00bfff' }
             });
+            directionsRenderers.push(walkingToDestinationRenderer); // Store the renderer
 
             // Step 1: Walk from origin to nearest accessible start station
             directionsService.route({
