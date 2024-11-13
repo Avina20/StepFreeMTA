@@ -127,9 +127,10 @@ class StationsAccessibilityTest(TestCase):
         # Test clicking the "Go" button and ensure correct redirection to map view with coordinates # noqa: E501
         station = Station.objects.get(gtfs_stop_id="R03")  # Example: Astoria Blvd
         response = self.client.get(reverse("app:station_detail", args=[station.id]))
+        print(response)
         go_button_url = (
             reverse("maps:map_view")
-            + f"?lat={station.gtfs_latitude}&lng={station.gtfs_longitude}&name={station.stop_name}"  # noqa: E501
+            + f"?source_lat={station.gtfs_latitude}&source_lng={station.gtfs_longitude}&name={station.stop_name}"  # noqa: E501
         )
         self.assertContains(response, f'href="{go_button_url}"')
 
