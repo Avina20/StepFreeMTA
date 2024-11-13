@@ -63,7 +63,7 @@
             <p>Source : { {{ profile.fav_source_latitude }} , {{ profile.fav_source_longitude }} }</p>
             <p>Destination : { {{ profile.fav_dest_latitude }} , {{ profile.fav_dest_longitude }} }</p>
             <!-- Map icon with link to the map page -->
-            <a href="{% url 'maps:map_view' %}?source_lat={{ profile.fav_source_latitude }}&source_lng={{ profile.fav_source_longitude }}&dest_lat={{ profile.fav_dest_latitude }}&dest_lng={{ profile.fav_dest_longitude }}&name=Favourite" target="_blank">
+            <a href="{% url 'maps:map_view' %}?source_lat={{ profile.fav_source_latitude }}&source_lng={{ profile.fav_source_longitude }}&dest_lat={{ profile.fav_dest_latitude }}&dest_lng={{ profile.fav_dest_longitude }}&name=Favourite">
                 <i class="bi bi-geo-fill"></i>
             </a>
         {% else %}
