@@ -8,6 +8,7 @@ from .models import Station, Profile, Review
 from django.db.models import Avg
 from django.contrib.auth.decorators import login_required
 from .forms import ProfileUpdateForm, RatingForm
+from django.utils import timezone
 from django.http import JsonResponse
 from google.transit import gtfs_realtime_pb2
 import json
@@ -107,18 +108,27 @@ def station_detail(request, station_id):
         user_reviewed = Review.objects.filter(
             station=station, user=request.user
         ).first()
+        if user_reviewed:
+            already_reviewed = True
+        else:
+            already_reviewed = None
         if request.method == "POST":
             if form.is_valid():
                 if user_reviewed:
                     # Update the existing review
                     rating = user_reviewed
                     rating.rating = form.cleaned_data["rating"]
+                    prev_comment = rating.comment
                     rating.comment = form.cleaned_data["comment"]
+                    if rating.comment == "":
+                        rating.comment = prev_comment
+                    rating.created_at = timezone.now()
                     rating.save()
                 else:
                     rating = form.save(commit=False)
                     rating.station = station
                     rating.user = request.user
+                    rating.created_at = timezone.now()
                     rating.save()
                 messages.success(request, "Your review has been added!")
                 return redirect("app:station_detail", station_id=station.id)
@@ -141,9 +151,11 @@ def station_detail(request, station_id):
         ]
 
     # Find last 5 comments
-    last_five_comments = Review.objects.filter(station=station).order_by("-created_at")[
-        :5
-    ]
+    last_five_comments = (
+        Review.objects.filter(comment__isnull=False, station=station)
+        .exclude(comment="")
+        .order_by("-created_at")[:5]
+    )
 
     return render(
         request,
@@ -154,6 +166,7 @@ def station_detail(request, station_id):
             "comments": last_five_comments,
             "form": form,
             "avg_rating": avg_rating,
+            "reviewed": already_reviewed,
         },
     )
 
