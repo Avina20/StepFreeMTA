@@ -27,7 +27,7 @@
         {% if profile.home_latitude %}
             <p>{ {{ profile.home_latitude }} , {{ profile.home_longitude }} }  </p>
             <!-- Map icon with link to the map page -->
-            <a href="{% url 'maps:map_view' %}?source_lat={{ profile.home_latitude }}&source_lng={{ profile.home_longitude }}&name=Home" target="_blank">
+            <a href="{% url 'maps:map_view' %}?source_lat={{ profile.home_latitude }}&source_lng={{ profile.home_longitude }}&name=Home">
                 <i class="bi bi-geo-fill"></i> 
             </a>
         {% else %}
@@ -39,7 +39,7 @@
         {% if profile.work_latitude %}
             <p>{ {{ profile.work_latitude }} , {{ profile.work_longitude }} }  </p>
             <!-- Map icon with link to the map page -->
-            <a href="{% url 'maps:map_view' %}?source_lat={{ profile.work_latitude }}&source_lng={{ profile.work_longitude }}&name=Work" target="_blank">
+            <a href="{% url 'maps:map_view' %}?source_lat={{ profile.work_latitude }}&source_lng={{ profile.work_longitude }}&name=Work">
                 <i class="bi bi-geo-fill"></i>
             </a>
         {% else %}
@@ -51,7 +51,7 @@
             <p>Station: {{ profile.fav_station.stop_name }}</p>
             <a href="{% url 'app:station_detail' profile.fav_station.station_id %}">View Station Details</a>
             <!-- Map icon with link to the map page -->
-            <a href="{% url 'maps:map_view' %}?source_lat={{ profile.fav_station.gtfs_latitude }}&source_lng={{ profile.fav_station.gtfs_longitude }}&name={{ profile.fav_station.stop_name }}" target="_blank">
+            <a href="{% url 'maps:map_view' %}?source_lat={{ profile.fav_station.gtfs_latitude }}&source_lng={{ profile.fav_station.gtfs_longitude }}&name={{ profile.fav_station.stop_name }}">
                 <i class="bi bi-geo-fill"></i>
             </a>
         {% else %}
