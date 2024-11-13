@@ -32,7 +32,7 @@ body {
     margin: 0;
 }
 
-.navbar a , .go{
+.navbar a, .go, .submit{
     background-color: #4CAF50;
     text-decoration: none;
     color: white;
@@ -44,7 +44,11 @@ body {
     transition: background-color 0.3s;
 }
 
-.navbar a:hover , .go:hover{
+.submit{
+    justify-content: center
+}
+
+.navbar a:hover, .go:hover, .submit:hover{
     background-color: #45a049;
 }
 
@@ -119,6 +123,12 @@ tr:hover td {
 .button-container {
     display: flex;
     justify-content: space-between;
+    margin-top: 20px;
+}
+
+.submit-container {
+    display: flex;
+    justify-content: center;
     margin-top: 20px;
 }
 
