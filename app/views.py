@@ -104,14 +104,14 @@ def station_detail(request, station_id):
     station = get_object_or_404(Station, id=station_id)
     form = RatingForm(request.POST)
 
+    already_reviewed = None
+
     if request.user.is_authenticated:
         user_reviewed = Review.objects.filter(
             station=station, user=request.user
         ).first()
         if user_reviewed:
             already_reviewed = True
-        else:
-            already_reviewed = None
         if request.method == "POST":
             if form.is_valid():
                 if user_reviewed:
