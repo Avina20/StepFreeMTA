@@ -140,7 +140,7 @@ class StationsAccessibilityTest(TestCase):
         response = self.client.get(reverse("app:station_detail", args=[station.id]))
         go_button_url = (
             reverse("maps:map_view")
-            + f"?source_lat={station.gtfs_latitude}&source_lng={station.gtfs_longitude}&name={station.stop_name}"  # noqa: E501
+            + f"?lat={station.gtfs_latitude}&lng={station.gtfs_longitude}&name={station.stop_name}"  # noqa: E501
         )
 
         self.assertContains(response, f'href="{go_button_url}"')
@@ -246,6 +246,24 @@ class ReviewTests(TestCase):
         rating = Review.objects.get(user=self.user, station=self.station)
         self.assertEqual(
             rating.comment, "Perfect station"
+        )  # Ensure the rating was updated to 5
+        self.assertEqual(
+            response.status_code, 302
+        )  # Check for a redirect after success
+
+    def test_update_review_keep_comment(self):
+        self.client.login(username="testuser", password="password123")
+        Review.objects.create(
+            user=self.user, station=self.station, rating=3, comment="OK station"
+        )  # Initial rating
+
+        # Submit a new review with a different rating value
+        response = self.client.post(self.rate_url, {"rating": 5, "comment": ""})
+
+        # Check that the existing review was updated
+        rating = Review.objects.get(user=self.user, station=self.station)
+        self.assertEqual(
+            rating.comment, "OK station"
         )  # Ensure the rating was updated to 5
         self.assertEqual(
             response.status_code, 302
