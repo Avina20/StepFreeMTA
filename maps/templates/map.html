@@ -53,9 +53,11 @@
         <label for="end">Ending Point:</label>
         <input type="text" id="end" placeholder="Enter destination" onchange="resetEndLocation()">
         
+        {% if user.is_authenticated %}
         <button id="saveFavoriteButton" onclick="saveFavorite()">
             ❤️
         </button>
+        {% endif %}
 
         <button onclick="findRoute()">Find Route</button>
 
