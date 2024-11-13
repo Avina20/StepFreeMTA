@@ -4,137 +4,12 @@
 <head>
     <title>Google Map Route Finder</title>
 
-    <!-- Script to check if Google Maps API has loaded and reload if not -->
-    <script>
-        // Define initMap in the global scope
-        function initMap() {
-            // Your existing initMap code
-            map = new google.maps.Map(document.getElementById('map'), {
-                zoom: 13,
-                center: { lat: 40.7128, lng: -74.0060 }, // Default to New York City
-            });
-
-            map.data.loadGeoJson(
-                "https://data.ny.gov/resource/39hk-dx4f.geojson",
-            );
-
-            // Initial filter to show only accessible stations
-            setStationFilter();
-
-            // Add a click listener to display station information
-            map.data.addListener('click', function(event) {
-                const stationName = event.feature.getProperty('stop_name');
-                const latitude = event.feature.getGeometry().get().lat();
-                const longitude = event.feature.getGeometry().get().lng();
-                document.getElementById('end').value = stationName;
-                endLocation = { lat: latitude, lng: longitude }; // Store coordinates
-
-                // Display the station name and coordinates in an info window
-                const infoWindow = new google.maps.InfoWindow({
-                    content: `<h3>${stationName}</h3><p>Latitude: ${latitude}<br>Longitude: ${longitude}</p>`,
-                    position: { lat: latitude, lng: longitude }
-                });
-                infoWindow.open(map);
-            });
-
-            const stationLat = parseFloat("{{ lat }}");
-            const stationLng = parseFloat("{{ lng }}");
-            const stationName = "{{ station_name }}";
-
-            directionsService = new google.maps.DirectionsService();
-            directionsRenderer = new google.maps.DirectionsRenderer({
-                map: map,
-                suppressPolylines: false, // Do not suppress default polylines
-                suppressMarkers: false,
-                draggable: false,
-                polylineOptions: {strokeColor: '#000000', strokeOpacity: 0.1, strokeWeight: 5}
-            });
-
-            // Initialize PlacesService
-            placesService = new google.maps.places.PlacesService(map);
-
-            if (stationLat && stationLng) {
-                document.getElementById("start").value = stationName;
-                centerMapOnStation(stationLat, stationLng, stationName, map);
-            } else {
-                // Try to get the user's current location on map load
-                if (navigator.geolocation) {
-                    navigator.geolocation.getCurrentPosition(
-                        (position) => {
-                            const userLocation = {
-                                lat: position.coords.latitude,
-                                lng: position.coords.longitude
-                            };
-
-                            // Center map on user's location
-                            map.setCenter(userLocation);
-
-                            // Add a small blue dot to represent user's location
-                            blueDotMarker = new google.maps.Marker({
-                                position: userLocation,
-                                map: map,
-                                icon: {
-                                    path: google.maps.SymbolPath.CIRCLE,
-                                    scale: 8,
-                                    fillColor: '#4285F4',  // Google blue color
-                                    fillOpacity: 1,
-                                    strokeColor: '#ffffff', // White border
-                                    strokeWeight: 2
-                                },
-                                title: "You are here"
-                            });
-                        },
-                        (error) => {
-                            alert("Error fetching current location: " + error.message);
-                        }
-                    );
-                }
-            }
-        }
-
-        window.initMap = initMap;
-
-        // (function() {
-        //     var maxAttempts = 10;  // Maximum number of reload attempts
-        //     var attempts = sessionStorage.getItem('mapLoadAttempts') || 0;
-
-        //     function checkMapLoaded() {
-        //         if (typeof google !== 'undefined' && typeof google.maps !== 'undefined') {
-        //             // Map is loaded
-        //             sessionStorage.removeItem('mapLoadAttempts');
-        //         } else {
-        //             // Map not loaded
-        //             attempts++;
-        //             if (attempts < maxAttempts) {
-        //                 sessionStorage.setItem('mapLoadAttempts', attempts);
-        //                 console.log('Map not loaded, reloading page. Attempt ' + attempts);
-        //                 location.reload();
-        //             } else {
-        //                 sessionStorage.removeItem('mapLoadAttempts');
-        //                 alert('Unable to load the map after ' + maxAttempts + ' attempts. Please check your internet connection or try again later.');
-        //             }
-        //         }
-        //     }
-
-        //     // Delay check to allow time for scripts to load
-        //     window.onload = function() {
-        //         setTimeout(checkMapLoaded, 300); // Check after 0.3 seconds
-        //     };
-        // })();
-    </script>
-
-    <!-- Google Maps API script with async and defer -->
-    <script src="https://maps.googleapis.com/maps/api/js?key={{ google_maps_api_key }}&libraries=places&callback=initMap" async defer></script>
-
-    <!-- Bootstrap CSS and JS -->
+    <!-- Bootstrap CSS -->
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css">
-    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/js/bootstrap.bundle.min.js"></script>
 
     <!-- Custom CSS -->
     <link rel="stylesheet" type="text/css" href="{% static 'maps/map.css' %}">
-
 </head>
 
 <body>
@@ -229,10 +104,10 @@
     <!-- Add json_script to safely embed JSON for accessible subway data -->
     {{ accessible_subway_data|json_script:"accessible-stations" }}
 
-
     <script>
-        let map, directionsService, directionsRenderer, placesService, currentLocationMarker, blueDotMarker;
+        let map, directionsService, placesService, currentLocationMarker, blueDotMarker;
         let polylines = []; // Array to store polylines
+        let directionsRenderers = []; // Array to store DirectionsRenderer instances
         let nearbyStationMarkers = []; // Array to store nearby subway station markers
         let stationsVisible = false; // Tracks visibility of subway stations
         let startLocation = null; // To store starting point coordinates
@@ -268,19 +143,22 @@
             'Q': '#FCCC0A',   // Yellow
             'R': '#FCCC0A',   // Yellow
             'J': '#996633',   // Brown
-            'Z': '#996633',   // Brown,
+            'Z': '#996633',   // Brown
             'W': '#FCCC0A',   // Yellow
             '7': '#B933AD',   // Purple
         };
 
         let selectedStationMarker = null;
 
+        // Initialize the map
         function initMap() {
+            // Initialize the map centered on New York City
             map = new google.maps.Map(document.getElementById('map'), {
                 zoom: 13,
                 center: { lat: 40.7128, lng: -74.0060 }, // Default to New York City
             });
 
+            // Load GeoJSON data for subway stations
             map.data.loadGeoJson(
                 "https://data.ny.gov/resource/39hk-dx4f.geojson",
             );
@@ -307,17 +185,8 @@
             const stationLat = parseFloat("{{ lat }}");
             const stationLng = parseFloat("{{ lng }}");
             const stationName = "{{ station_name }}";
-            const destStationLat = parseFloat("{{ dest_lat }}");
-            const destStationLng = parseFloat("{{ dest_lng }}");
 
             directionsService = new google.maps.DirectionsService();
-            directionsRenderer = new google.maps.DirectionsRenderer({
-                map: map,
-                suppressPolylines: false, // Do not suppress default polylines
-                suppressMarkers: false,
-                draggable: false,
-                polylineOptions: {strokeColor: '#000000', strokeOpacity: 0.1, strokeWeight: 5}
-            });
 
             // Initialize PlacesService
             placesService = new google.maps.places.PlacesService(map);
@@ -325,12 +194,6 @@
             if (stationLat && stationLng) {
                 document.getElementById("start").value = stationName;
                 centerMapOnStation(stationLat, stationLng, stationName, map);
-
-                if (destStationLat && destStationLng) {
-                    document.getElementById("end").value = stationName;
-                    endLocation = { lat: destStationLat, lng: destStationLng };
-                    findRoute();
-                }
             } else {
                 // Try to get the user's current location on map load
                 if (navigator.geolocation) {
@@ -365,11 +228,21 @@
                     );
                 }
             }
-        }
 
+            // Enable or Disable the "Show Nearby Subway Stations" Button
+            const toggleStationsButton = document.getElementById('toggle-stations-button');
+            if (navigator.geolocation) {
+                // Geolocation is available, enable the button
+                toggleStationsButton.disabled = false;
+            } else {
+                // Geolocation is not available, disable the button and inform the user
+                toggleStationsButton.disabled = true;
+                toggleStationsButton.innerText = 'Geolocation not available';
+            }
+        }
         window.initMap = initMap;
 
-        // Function to center map, place marker on the selected station, and find nearby stations
+        // Function to center map on a station
         function centerMapOnStation(lat, lng, stationName) {
             const stationLocation = { lat: lat, lng: lng };
             startLocation = stationLocation;
@@ -385,7 +258,7 @@
                 position: stationLocation,
                 map: map,
                 icon: {
-                    url: "http://maps.google.com/mapfiles/ms/icons/green-dot.png", // Change color (e.g., blue, green)
+                    url: "https://maps.google.com/mapfiles/ms/icons/green-dot.png", // Change color
                 },
                 title: stationName || "Selected Station",
             });
@@ -440,63 +313,13 @@
                 // Show nearby accessible stations within the radius
                 findAccessibleStationsWithinRadius();
                 stationsVisible = true;
-                button.innerText = 'Hide Nearby Accessible Subway Stations';
+                button.innerText = 'Hide Nearby Subway Stations';
             } else {
                 // Hide nearby accessible stations
                 clearNearbyMarkers();
                 stationsVisible = false;
-                button.innerText = 'Show Nearby Accessible Subway Stations';
+                button.innerText = 'Show Nearby Subway Stations';
             }
-        }
-        
-        // Function to find accessible subway stations within the user-selected radius
-        function findAccessibleStationsWithinRadius() {
-            if (!navigator.geolocation) {
-                alert("Geolocation is not supported by this browser.");
-                return;
-            }
-
-            navigator.geolocation.getCurrentPosition(
-                (position) => {
-                    const userLocation = {
-                        lat: position.coords.latitude,
-                        lng: position.coords.longitude
-                    };
-
-                    // Get the selected radius from the slider in meters
-                    const radius = parseFloat(document.getElementById('radius-slider').value) * 1609.34;
-
-                    // Clear existing markers
-                    clearNearbyMarkers();
-
-                    // Fetch accessible stations from the server-side context
-                    const accessibleStations = JSON.parse(document.getElementById('accessible-stations').textContent);
-
-                    // Filter stations within the radius and plot them
-                    accessibleStations.forEach(station => {
-                        const stationLocation = {
-                            lat: parseFloat(station.gtfs_latitude),
-                            lng: parseFloat(station.gtfs_longitude)
-                        };
-                        const distance = calculateDistance(userLocation, stationLocation);
-
-                        if (distance <= radius) {
-                            const stationMarker = new google.maps.Marker({
-                                position: stationLocation,
-                                map: map,
-                                icon: 'https://maps.google.com/mapfiles/ms/icons/green-dot.png', // Green marker
-                                title: station.stop_name
-                            });
-
-                            // Add the station to the markers array to manage visibility
-                            nearbyStationMarkers.push(stationMarker);
-                        }
-                    });
-                },
-                (error) => {
-                    alert("Error fetching current location: " + error.message);
-                }
-            );
         }
 
         // Function to create a marker with an optional pixel offset
@@ -617,6 +440,8 @@
 
         function geocodeAndFindAccessibleStations(origin, destination) {
             const geocoder = new google.maps.Geocoder();
+            let originGeocoded = false;
+            let destinationGeocoded = false;
 
             if (typeof origin === "string") {
                 geocoder.geocode({ address: origin }, (results, status) => {
@@ -627,14 +452,17 @@
                         };
                         startLocation = origin; // Store coordinates
                         console.log("Geocoded origin:", origin);
-
-                        if (typeof destination !== "string") {
+                        originGeocoded = true;
+                        if (destinationGeocoded) {
                             findAccessibleStationsAndRoute(origin, destination);
                         }
                     } else {
                         console.log("Geocoding failed for origin:", status);
+                        alert("Geocoding failed for origin: " + status);
                     }
                 });
+            } else {
+                originGeocoded = true;
             }
 
             if (typeof destination === "string") {
@@ -646,47 +474,113 @@
                         };
                         endLocation = destination; // Store coordinates
                         console.log("Geocoded destination:", destination);
-
-                        // Proceed only when both origin and destination are fully defined
-                        if (origin && typeof origin !== "string") {
+                        destinationGeocoded = true;
+                        if (originGeocoded) {
                             findAccessibleStationsAndRoute(origin, destination);
                         }
                     } else {
                         console.log("Geocoding failed for destination:", status);
+                        alert("Geocoding failed for destination: " + status);
                     }
                 });
+            } else {
+                destinationGeocoded = true;
+            }
+
+            // If both origin and destination are already geocoded (not strings), proceed
+            if (originGeocoded && destinationGeocoded) {
+                findAccessibleStationsAndRoute(origin, destination);
             }
         }
 
-        function findAccessibleStationsAndRoute(origin, destination) {
-            console.log("Finding accessible stations for:", origin, destination);
-
-            // Check for valid origin and destination coordinates
-            if (!origin || typeof origin.lat !== "number" || typeof origin.lng !== "number") {
-                console.error("Error: Invalid origin coordinates.");
-                return;
-            }
-            if (!destination || typeof destination.lat !== "number" || typeof destination.lng !== "number") {
-                console.error("Error: Invalid destination coordinates.");
+        function findAccessibleStationsWithinRadius() {
+            if (!navigator.geolocation) {
+                alert("Geolocation is not supported by this browser.");
                 return;
             }
 
-            // Find nearest accessible stations to origin and destination
-            const nearestStartStation = findNearestStation(origin);
-            const nearestEndStation = findNearestStation(destination);
+            navigator.geolocation.getCurrentPosition(
+                (position) => {
+                    const userLocation = {
+                        lat: position.coords.latitude,
+                        lng: position.coords.longitude
+                    };
 
-            console.log("Nearest accessible station to start:", nearestStartStation);
-            console.log("Nearest accessible station to end:", nearestEndStation);
+                    // Get the selected radius from the slider in meters
+                    const radius = parseFloat(document.getElementById('radius-slider').value) * 1609.34; // Convert miles to meters
 
-            if (!nearestStartStation || !nearestEndStation) {
-                console.error("No accessible stations found near start or end.");
-                return;
-            }
+                    // Clear existing markers
+                    clearNearbyMarkers();
 
-            routeWithSegments(origin, nearestStartStation, nearestEndStation, destination);
+                    // Fetch accessible stations from the server-side context
+                    const accessibleStations = JSON.parse(document.getElementById('accessible-stations').textContent);
+
+                    // Filter stations within the radius and plot them
+                    accessibleStations.forEach(station => {
+                        const stationLocation = {
+                            lat: parseFloat(station.gtfs_latitude),
+                            lng: parseFloat(station.gtfs_longitude)
+                        };
+                        const distance = calculateDistance(userLocation, stationLocation);
+
+                        if (distance <= radius) {
+                            const stationMarker = new google.maps.Marker({
+                                position: stationLocation,
+                                map: map,
+                                icon: 'https://maps.google.com/mapfiles/ms/icons/green-dot.png', // Green marker
+                                title: station.stop_name
+                            });
+
+                            // Add the station to the markers array to manage visibility
+                            nearbyStationMarkers.push(stationMarker);
+                        }
+                    });
+
+                    // Optionally, center the map on the user's location
+                    map.setCenter(userLocation);
+
+                    // Optionally, add a marker for the user's location
+                    if (currentLocationMarker) {
+                        currentLocationMarker.setMap(null);
+                    }
+
+                    currentLocationMarker = new google.maps.Marker({
+                        position: userLocation,
+                        map: map,
+                        title: "Your Location",
+                        icon: {
+                            path: google.maps.SymbolPath.CIRCLE,
+                            scale: 6,
+                            fillColor: '#4285F4', // Google blue color
+                            fillOpacity: 1,
+                            strokeColor: '#ffffff', // White border
+                            strokeWeight: 2
+                        }
+                    });
+                },
+                (error) => {
+                    alert("Error fetching current location: " + error.message);
+
+                    if (error.code === error.PERMISSION_DENIED) {
+                        // User denied geolocation, disable the button and update its text
+                        const toggleStationsButton = document.getElementById('toggle-stations-button');
+                        toggleStationsButton.disabled = true;
+                        toggleStationsButton.innerText = 'Geolocation not enabled';
+                    }
+                }
+            );
+        }
+
+        function clearDirectionsRenderers() {
+            directionsRenderers.forEach(renderer => renderer.setMap(null));
+            directionsRenderers = []; // Reset the array
         }
 
         function routeWithSegments(origin, startStation, endStation, destination) {
+            // Clear previous polylines and directions
+            clearPolylines();
+            clearDirectionsRenderers();
+
             // Convert coordinates to LatLng format if necessary
             const originLatLng = new google.maps.LatLng(origin.lat, origin.lng);
             const startStationLatLng = new google.maps.LatLng(startStation.latitude, startStation.longitude);
@@ -695,25 +589,30 @@
 
             document.getElementById('directions-list').innerHTML = "";
 
-            // Create individual renderers for each segment
+            // Create individual renderers for each segment and store them
             const walkingToStationRenderer = new google.maps.DirectionsRenderer({ 
                 map: map, 
                 suppressMarkers: false,
                 preserveViewport: true,
-                polylineOptions: { strokeColor: '#00bfff' } // Customize color for each segment if desired
+                polylineOptions: { strokeColor: '#00bfff' }
             });
+            directionsRenderers.push(walkingToStationRenderer); // Store the renderer
+
             const subwayRenderer = new google.maps.DirectionsRenderer({
                 map: map,
                 suppressMarkers: false,
                 preserveViewport: true,
-                polylineOptions: { strokeColor: '#ff4500' } // Color for subway route
+                polylineOptions: { strokeColor: '#ff4500' }
             });
+            directionsRenderers.push(subwayRenderer); // Store the renderer
+
             const walkingToDestinationRenderer = new google.maps.DirectionsRenderer({
                 map: map,
                 suppressMarkers: false,
                 preserveViewport: true,
-                polylineOptions: { strokeColor: '#00bfff' } // Color for final walking route
+                polylineOptions: { strokeColor: '#00bfff' }
             });
+            directionsRenderers.push(walkingToDestinationRenderer); // Store the renderer
 
             // Step 1: Walk from origin to nearest accessible start station
             directionsService.route({
@@ -734,6 +633,7 @@
                     }, function(transitResult, status) {
                         if (status === 'OK') {
                             subwayRenderer.setDirections(transitResult);
+                            drawColoredOverlays(transitResult);
                             displayRouteSteps(transitResult, "Subway Route");
 
                             // Step 3: Walk from nearest accessible end station to final destination
@@ -872,7 +772,7 @@
                 return {
                     visible: showAccessibleOnly ? isAccessible : showAllStations,
                     icon: {
-                        url: isAccessible ? "http://maps.google.com/mapfiles/ms/icons/red-dot.png" : "http://maps.google.com/mapfiles/ms/icons/blue-dot.png"
+                        url: isAccessible ? "https://maps.google.com/mapfiles/ms/icons/red-dot.png" : "https://maps.google.com/mapfiles/ms/icons/blue-dot.png"
                     }
                 };
             });
@@ -917,13 +817,49 @@
             }
         }
 
-        // CSRF token function if required
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    // Does this cookie string begin with the name we want?
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+
         function getCSRFToken() {
-            const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
-            return csrfToken;
+            return getCookie('csrftoken');
+        }
+
+        function findAccessibleStationsAndRoute(origin, destination) {
+            // Find nearest accessible station to origin
+            const startStation = findNearestStation(origin);
+            // Find nearest accessible station to destination
+            const endStation = findNearestStation(destination);
+
+            if (startStation && endStation) {
+                // Route between the points
+                routeWithSegments(origin, startStation, endStation, destination);
+            } else {
+                console.log("Could not find accessible stations near origin or destination.");
+                alert("Could not find accessible stations near origin or destination.");
+            }
         }
 
     </script>
-</body>
 
+    <!-- Google Maps API script with async and defer -->
+    <script src="https://maps.googleapis.com/maps/api/js?key={{ google_maps_api_key }}&libraries=places&callback=initMap" async defer></script>
+
+    <!-- Bootstrap JS (placed at the end for better performance) -->
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/js/bootstrap.bundle.min.js"></script>
+
+</body>
 </html>
