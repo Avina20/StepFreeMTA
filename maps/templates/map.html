@@ -188,6 +188,8 @@
             const stationLat = parseFloat("{{ lat }}");
             const stationLng = parseFloat("{{ lng }}");
             const stationName = "{{ station_name }}";
+            const destStationLat = parseFloat("{{ dest_lat }}");
+            const destStationLng = parseFloat("{{ dest_lng }}");
 
             directionsService = new google.maps.DirectionsService();
 
@@ -197,6 +199,13 @@
             if (stationLat && stationLng) {
                 document.getElementById("start").value = stationName;
                 centerMapOnStation(stationLat, stationLng, stationName, map);
+
+                if (destStationLat && destStationLng) {
+                    document.getElementById("end").value = stationName;
+                    endLocation = { lat: destStationLat, lng: destStationLng };
+                    document.getElementById("end").value = stationName;
+                    findRoute();
+                }
             } else {
                 // Try to get the user's current location on map load
                 if (navigator.geolocation) {
