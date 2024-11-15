@@ -42,7 +42,7 @@ class LoginViewTest(TestCase):
         self.client.force_login(self.user)
         response = self.client.get(self.url)
         self.assertEqual(response.status_code, 302)
-        self.assertEqual(response.url, reverse('maps:map_view'))
+        self.assertEqual(response.url, reverse("maps:map_view"))
 
 
 class RegisterViewTest(TestCase):
@@ -88,26 +88,26 @@ class RegisterViewTest(TestCase):
         self.assertEqual(response.status_code, 200)
         # Instead of asserting form error, check for error message presence
         self.assertContains(response, "The two password fields didn’t match.")
-        
+
     def test_access_register_view_after_login(self):
         self.client.force_login(self.user)
         response = self.client.get(self.url)
         self.assertEqual(response.status_code, 302)
-        self.assertEqual(response.url, reverse('maps:map_view'))
-        
-        
+        self.assertEqual(response.url, reverse("maps:map_view"))
+
+
 class LogoutTest(TestCase):
     def setUp(self):
         self.url = reverse("app:logout")
         self.user = User.objects.create_user(username="testuser", password="password")
         self.client = Client()
-        
+
     def test_logout_post(self):
         self.client.force_login(self.user)
         response = self.client.post(self.url)
         self.assertEqual(response.status_code, 302)
         self.assertFalse(response.wsgi_request.user.is_authenticated)
-    
+
     def test_logout_get(self):
         self.client.force_login(self.user)
         response = self.client.get(self.url)
