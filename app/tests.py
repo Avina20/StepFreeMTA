@@ -1,4 +1,4 @@
-from django.test import TestCase
+from django.test import TestCase, Client
 from django.urls import reverse
 from .models import Station, Review
 from django.contrib.auth.models import User
@@ -10,6 +10,7 @@ class LoginViewTest(TestCase):
     def setUp(self):
         self.url = reverse("app:login")
         self.user = User.objects.create_user(username="testuser", password="password")
+        self.client = Client()
 
     def test_login_view_get(
         self,
@@ -37,10 +38,20 @@ class LoginViewTest(TestCase):
         # Instead of asserting form error, check for error message presence
         self.assertContains(response, "Please enter a correct username and password.")
 
+    def test_access_login_view_after_login(self):
+        self.client.force_login(self.user)
+        response = self.client.get(self.url)
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.url, reverse('maps:map_view'))
+
 
 class RegisterViewTest(TestCase):
     def setUp(self):
         self.url = reverse("app:register")
+        self.client = Client()
+        self.user = User.objects.create_user(
+            username="testuser", password="testpassword@1234"
+        )
 
     def test_register_view_get(
         self,
@@ -77,6 +88,31 @@ class RegisterViewTest(TestCase):
         self.assertEqual(response.status_code, 200)
         # Instead of asserting form error, check for error message presence
         self.assertContains(response, "The two password fields didn’t match.")
+        
+    def test_access_register_view_after_login(self):
+        self.client.force_login(self.user)
+        response = self.client.get(self.url)
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.url, reverse('maps:map_view'))
+        
+        
+class LogoutTest(TestCase):
+    def setUp(self):
+        self.url = reverse("app:logout")
+        self.user = User.objects.create_user(username="testuser", password="password")
+        self.client = Client()
+        
+    def test_logout_post(self):
+        self.client.force_login(self.user)
+        response = self.client.post(self.url)
+        self.assertEqual(response.status_code, 302)
+        self.assertFalse(response.wsgi_request.user.is_authenticated)
+    
+    def test_logout_get(self):
+        self.client.force_login(self.user)
+        response = self.client.get(self.url)
+        self.assertEqual(response.status_code, 403)
+        self.assertTrue(response.wsgi_request.user.is_authenticated)
 
 
 class StationsAccessibilityTest(TestCase):

@@ -13,10 +13,14 @@ from django.http import JsonResponse
 from google.transit import gtfs_realtime_pb2
 import json
 import requests
+from django.core.exceptions import PermissionDenied
 
 
 # User Registration View
 def register_view(request):
+    if request.user.is_authenticated:
+        return redirect("maps:map_view")
+    
     if request.method == "POST":
         form = UserCreationForm(request.POST)
         if form.is_valid():
@@ -40,6 +44,9 @@ def register_view(request):
 
 # Login View
 def login_view(request):
+    if request.user.is_authenticated:
+        return redirect("maps:map_view")
+    
     if request.method == "POST":
         form = AuthenticationForm(request, data=request.POST)
         if form.is_valid():
@@ -58,11 +65,13 @@ def login_view(request):
 
 
 # Logout View
+@login_required
 def logout_view(request):
     if request.method == "POST":
         logout(request)
-        messages.success(request, "You have successfully logged out.")
         return redirect("maps:map_view")
+    else:
+        raise PermissionDenied
 
 
 # Stations View
