@@ -8,6 +8,7 @@ from django.db.models import Q
 from django.shortcuts import get_object_or_404
 from .forms import UserSearchForm
 from django.core.exceptions import PermissionDenied
+from django.utils.html import escape
 
 
 @login_required
@@ -44,7 +45,7 @@ def inbox(request):
         conversation_history[messaging_partner] = {
             "sender": message.sender.username,
             "recipient": message.recipient.username,
-            "content": message.content,
+            "content": escape(message.content),
             "timestamp": message.timestamp.strftime("%Y-%m-%d %H:%M:%S"),
         }
 
@@ -84,7 +85,7 @@ def direct_messaging(request, messaging_partner_name):
         {
             "sender": message.sender.username,
             "recipient": message.recipient.username,
-            "content": message.content,
+            "content": escape(message.content),
             "timestamp": message.timestamp.strftime("%Y-%m-%d %H:%M:%S"),
         }
         for message in messages_history
@@ -131,7 +132,7 @@ def get_new_messages(request, messaging_partner_name):
         {
             "sender": message.sender.username,
             "recipient": message.recipient.username,
-            "content": message.content,
+            "content": escape(message.content),
             "timestamp": message.timestamp.strftime("%Y-%m-%d %H:%M:%S"),
         }
         for message in messages_history
