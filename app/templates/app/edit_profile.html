@@ -49,17 +49,44 @@
                 center: { lat: 40.7128, lng: -74.0060 },
                 zoom: 12
             });
-
+    
             homeMap.addListener("click", function(e) {
                 document.getElementById("id_home_latitude").value = e.latLng.lat();
                 document.getElementById("id_home_longitude").value = e.latLng.lng();
             });
-
+    
             workMap.addListener("click", function(e) {
                 document.getElementById("id_work_latitude").value = e.latLng.lat();
                 document.getElementById("id_work_longitude").value = e.latLng.lng();
             });
         }
+    
+        // Validation logic for latitude and longitude
+        function validateLatLon(lat, lon) {
+            return lat >= -90 && lat <= 90 && lon >= -180 && lon <= 180;
+        }
+    
+        // Add event listener to validate before form submission
+        document.querySelector("form").addEventListener("submit", function(e) {
+            const homeLat = document.getElementById("id_home_latitude").value;
+            const homeLon = document.getElementById("id_home_longitude").value;
+            const workLat = document.getElementById("id_work_latitude").value;
+            const workLon = document.getElementById("id_work_longitude").value;
+    
+            // Validate home location if filled
+            if (homeLat !== "" && homeLon !== "" && !validateLatLon(parseFloat(homeLat), parseFloat(homeLon))) {
+                e.preventDefault(); // Prevent form submission
+                alert("Home location latitude must be between -90 and 90, and longitude must be between -180 and 180.");
+                return;
+            }
+    
+            // Validate work location if filled
+            if (workLat !== "" && workLon !== "" && !validateLatLon(parseFloat(workLat), parseFloat(workLon))) {
+                e.preventDefault(); // Prevent form submission
+                alert("Work location latitude must be between -90 and 90, and longitude must be between -180 and 180.");
+                return;
+            }
+        });
     </script>
 
     <script src="https://maps.googleapis.com/maps/api/js?key={{ google_maps_api_key }}&libraries=places&callback=initMap" async defer></script>
