@@ -8,6 +8,7 @@ from django.db.models import Q
 from django.shortcuts import get_object_or_404
 from .forms import UserSearchForm
 from django.core.exceptions import PermissionDenied
+from django.utils.html import escape
 
 
 @login_required
@@ -44,7 +45,7 @@ def inbox(request):
         conversation_history[messaging_partner] = {
             "sender": message.sender.username,
             "recipient": message.recipient.username,
-            "content": message.content,
+            "content": escape(message.content),
             "timestamp": message.timestamp.strftime("%Y-%m-%d %H:%M:%S"),
         }
 
@@ -71,6 +72,8 @@ def inbox(request):
 @login_required
 def direct_messaging(request, messaging_partner_name):
     messaging_partner = get_object_or_404(User, username=messaging_partner_name)
+    if messaging_partner == request.user:
+        raise PermissionDenied
     blocked_users = BlockedUser.objects.filter(blocker=request.user).values_list(
         "blocked__username", flat=True
     )
@@ -84,7 +87,7 @@ def direct_messaging(request, messaging_partner_name):
         {
             "sender": message.sender.username,
             "recipient": message.recipient.username,
-            "content": message.content,
+            "content": escape(message.content),
             "timestamp": message.timestamp.strftime("%Y-%m-%d %H:%M:%S"),
         }
         for message in messages_history
@@ -100,6 +103,8 @@ def direct_messaging(request, messaging_partner_name):
 @csrf_exempt
 def send_message(request, recipient_username):
     recipient = get_object_or_404(User, username=recipient_username)
+    if recipient == request.user:
+        raise PermissionDenied
     blocked_users = BlockedUser.objects.filter(blocker=request.user).values_list(
         "blocked__username", flat=True
     )
@@ -118,6 +123,8 @@ def send_message(request, recipient_username):
 @login_required
 def get_new_messages(request, messaging_partner_name):
     messaging_partner = get_object_or_404(User, username=messaging_partner_name)
+    if messaging_partner == request.user:
+        raise PermissionDenied
     blocked_users = BlockedUser.objects.filter(blocker=request.user).values_list(
         "blocked__username", flat=True
     )
@@ -131,7 +138,7 @@ def get_new_messages(request, messaging_partner_name):
         {
             "sender": message.sender.username,
             "recipient": message.recipient.username,
-            "content": message.content,
+            "content": escape(message.content),
             "timestamp": message.timestamp.strftime("%Y-%m-%d %H:%M:%S"),
         }
         for message in messages_history
@@ -142,6 +149,8 @@ def get_new_messages(request, messaging_partner_name):
 @login_required
 def block_user(request, messaging_partner_name):
     messaging_partner = get_object_or_404(User, username=messaging_partner_name)
+    if messaging_partner == request.user:
+        raise PermissionDenied
     already_blocked = BlockedUser.objects.filter(
         blocker=request.user, blocked=messaging_partner
     )

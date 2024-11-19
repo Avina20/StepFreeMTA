@@ -109,6 +109,7 @@
 
     <script>
         let map, directionsService, placesService, currentLocationMarker, blueDotMarker;
+        let startMarker, endMarker;
         let polylines = []; // Array to store polylines
         let directionsRenderers = []; // Array to store DirectionsRenderer instances
         let nearbyStationMarkers = []; // Array to store nearby subway station markers
@@ -160,6 +161,8 @@
                 zoom: 13,
                 center: { lat: 40.7128, lng: -74.0060 }, // Default to New York City
             });
+
+            initAutocomplete();
 
             map.addListener("click", function(e) {
                 const clickLat = e.latLng.lat();
@@ -368,6 +371,48 @@
 
             const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
             return R * c; // Distance in meters
+        }
+
+        function initAutocomplete() {
+            const startInput = document.getElementById("start");
+            const endInput = document.getElementById("end");
+
+            // Initialize Google Places Autocomplete for starting point
+            const startAutocomplete = new google.maps.places.Autocomplete(startInput);
+            startAutocomplete.setFields(["geometry", "formatted_address"]);
+            startAutocomplete.setComponentRestrictions({ country: "us" });
+
+            startAutocomplete.addListener("place_changed", () => {
+                const place = startAutocomplete.getPlace();
+                if (place.geometry) {
+                    startLocation = {
+                        lat: place.geometry.location.lat(),
+                        lng: place.geometry.location.lng(),
+                    };
+                    startInput.value = place.formatted_address; // Update input with formatted address
+                    console.log("Start location set:", startLocation);
+                } else {
+                    alert("No details available for the selected location.");
+                }
+            });
+
+            // Initialize Google Places Autocomplete for destination
+            const endAutocomplete = new google.maps.places.Autocomplete(endInput);
+            endAutocomplete.setFields(["geometry", "formatted_address"]);
+
+            endAutocomplete.addListener("place_changed", () => {
+                const place = endAutocomplete.getPlace();
+                if (place.geometry) {
+                    endLocation = {
+                        lat: place.geometry.location.lat(),
+                        lng: place.geometry.location.lng(),
+                    };
+                    endInput.value = place.formatted_address; // Update input with formatted address
+                    console.log("End location set:", endLocation);
+                } else {
+                    alert("No details available for the selected location.");
+                }
+            });
         }
 
         function searchNearbyStations(location) {
@@ -596,6 +641,33 @@
             directionsRenderers = []; // Reset the array
         }
 
+        function addCustomMarkers(origin, destination) {
+            // Remove existing start marker
+            if (startMarker) {
+                startMarker.setMap(null);
+            }
+            // Remove existing end marker
+            if (endMarker) {
+                endMarker.setMap(null);
+            }
+
+            // Add custom start marker
+            startMarker = new google.maps.Marker({
+                position: origin,
+                map: map,
+                icon: 'http://maps.google.com/mapfiles/markerA.png', // Custom icon
+                title: 'Start Point'
+            });
+
+            // Add custom end marker
+            endMarker = new google.maps.Marker({
+                position: destination,
+                map: map,
+                icon: 'http://maps.google.com/mapfiles/markerB.png', // Custom icon
+                title: 'End Point'
+            });
+        }
+
         function routeWithSegments(origin, startStation, endStation, destination) {
             // Clear previous polylines and directions
             clearPolylines();
@@ -609,10 +681,13 @@
 
             document.getElementById('directions-list').innerHTML = "";
 
+            // Add custom markers for start and end
+            addCustomMarkers(originLatLng, destinationLatLng);
+
             // Create individual renderers for each segment and store them
             const walkingToStationRenderer = new google.maps.DirectionsRenderer({ 
                 map: map, 
-                suppressMarkers: false,
+                suppressMarkers: true,
                 preserveViewport: true,
                 polylineOptions: { strokeColor: '#00bfff' }
             });
@@ -620,7 +695,7 @@
 
             const subwayRenderer = new google.maps.DirectionsRenderer({
                 map: map,
-                suppressMarkers: false,
+                suppressMarkers: true,
                 preserveViewport: true,
                 polylineOptions: { strokeColor: '#ff4500' }
             });
@@ -628,7 +703,7 @@
 
             const walkingToDestinationRenderer = new google.maps.DirectionsRenderer({
                 map: map,
-                suppressMarkers: false,
+                suppressMarkers: true,
                 preserveViewport: true,
                 polylineOptions: { strokeColor: '#00bfff' }
             });
