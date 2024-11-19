@@ -161,6 +161,14 @@
                 center: { lat: 40.7128, lng: -74.0060 }, // Default to New York City
             });
 
+            map.addListener("click", function(e) {
+                const clickLat = e.latLng.lat();
+                const clickLan = e.latLng.lng();
+                console.log("clicking",clickLat, clickLan);
+                endLocation = { lat: clickLat, lng: clickLan };
+                document.getElementById('end').value = `${clickLat}, ${clickLan}`;
+            });
+
             // Load GeoJSON data for subway stations
             map.data.loadGeoJson(
                 "https://data.ny.gov/resource/39hk-dx4f.geojson",
@@ -806,6 +814,7 @@
 
         // Favourite a route
         function saveFavorite() {
+            findRoute();
             if (startLocation && endLocation) {
                 fetch("{% url 'app:save_favorite_route' %}", {
                     method: 'POST',
