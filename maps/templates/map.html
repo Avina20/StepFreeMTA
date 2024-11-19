@@ -112,6 +112,7 @@
         let startMarker, endMarker;
         let polylines = []; // Array to store polylines
         let directionsRenderers = []; // Array to store DirectionsRenderer instances
+        let accessibilityMarkers = []; // Stores markers created by Accessibility Options
         let nearbyStationMarkers = []; // Array to store nearby subway station markers
         let stationsVisible = false; // Tracks visibility of subway stations
         let startLocation = null; // To store starting point coordinates
@@ -333,6 +334,8 @@
         function toggleNearbyStations() {
             const button = document.getElementById('toggle-stations-button');
             if (!stationsVisible) {
+                 // Ensure all accessibility markers are cleared
+                setFilter('hide');
                 // Show nearby accessible stations within the radius
                 findAccessibleStationsWithinRadius();
                 stationsVisible = true;
