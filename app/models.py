@@ -77,7 +77,7 @@ class Review(models.Model):
     ]
 
     rating = models.IntegerField(choices=RATING_CHOICES)
-    comment = models.TextField(blank=True, null=True)
+    comment = models.TextField(blank=True, null=True, max_length=255)
     created_at = models.DateTimeField(default=timezone.now)
 
     class Meta:
