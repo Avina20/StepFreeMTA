@@ -14,6 +14,7 @@ from google.transit import gtfs_realtime_pb2
 import json
 import requests
 from django.core.exceptions import PermissionDenied
+import datetime
 
 
 # User Registration View
@@ -245,10 +246,14 @@ def edit_profile(request):
     profile = request.user.profile
     if request.method == "POST":
         form = ProfileUpdateForm(request.POST, instance=profile)
+        date = request.POST.get("birth_date")
+        if date > datetime.date.today().isoformat():
+            messages.error(request, "Invalid date")
+            return redirect("app:edit_profile")
         if form.is_valid():
             form.save()
             messages.success(request, "Your profile has been updated.")
-            return redirect("app:profile")  # Change to your profile page URL name
+            return redirect("app:profile")
     else:
         form = ProfileUpdateForm(instance=profile)
 
