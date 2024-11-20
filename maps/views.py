@@ -1,6 +1,8 @@
 import googlemaps
 from django.conf import settings
 from django.shortcuts import render
+from app.models import Review
+from django.db.models import Avg
 import json
 import os
 from math import radians, sin, cos, sqrt, atan2
@@ -45,9 +47,36 @@ def find_nearest_accessible_station(lat, lng, max_distance_km=10):
 
 
 def map_view(request):
+    accessible_stations_with_reviews = []
+
+    # Loop through accessible subway data
+    for station in accessible_subway_data:
+        station_reviews = Review.objects.filter(
+            station__gtfs_stop_id=station["gtfs_stop_id"]
+        ).order_by("-created_at")[
+            :3
+        ]  # Get the newest 3 reviews
+
+        avg_rating = Review.objects.filter(
+            station__gtfs_stop_id=station["gtfs_stop_id"]
+        ).aggregate(Avg("rating"))["rating__avg"]
+
+        # Append station data with reviews and rating
+        accessible_stations_with_reviews.append(
+            {
+                **station,
+                "reviews": [
+                    {"user": review.user.username, "comment": review.comment}
+                    for review in station_reviews
+                ],
+                "avg_rating": avg_rating or "No rating yet",
+            }
+        )
+
     context = {
         "google_maps_api_key": settings.GOOGLE_MAPS_API_KEY,
-        "accessible_subway_data": accessible_subway_data,
+        # "accessible_subway_data": accessible_subway_data,
+        "accessible_stations_with_reviews": accessible_stations_with_reviews,
     }
 
     lat = request.GET.get("source_lat")
