@@ -3,6 +3,7 @@ from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
 from django.contrib.auth import login, logout
 from django.contrib import messages
 from django.views import generic
+from django.conf import settings
 from django.db.models import F
 from .models import Station, Profile, Review
 from django.db.models import Avg
@@ -257,7 +258,12 @@ def edit_profile(request):
     else:
         form = ProfileUpdateForm(instance=profile)
 
-    return render(request, "app/edit_profile.html", {"form": form})
+    context = {
+        "google_maps_api_key": settings.GOOGLE_MAPS_API_KEY,
+        "form": form,
+    }
+
+    return render(request, "app/edit_profile.html", context)
 
 
 @login_required
