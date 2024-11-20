@@ -105,19 +105,19 @@
     </div>
     
     <!-- Add json_script to safely embed JSON for accessible subway data -->
-    {{ accessible_subway_data|json_script:"accessible-stations" }}
+    {{ accessible_stations_with_reviews|json_script:"accessible-stations" }}
 
     <script>
         let map, directionsService, placesService, currentLocationMarker, blueDotMarker;
         let startMarker, endMarker;
         let polylines = []; // Array to store polylines
         let directionsRenderers = []; // Array to store DirectionsRenderer instances
-        let accessibilityMarkers = []; // Stores markers created by Accessibility Options
         let nearbyStationMarkers = []; // Array to store nearby subway station markers
         let stationsVisible = false; // Tracks visibility of subway stations
         let startLocation = null; // To store starting point coordinates
         let endLocation = null;   // To store ending point 
         let stationVisibility = 'all'; // Initial state for accessible data layer
+        let activeInfoWindow = null;
 
         // Define nearest accessible station data from Django context
         const nearestStationName = "{{ nearest_station_name|escapejs }}";
@@ -157,6 +157,7 @@
 
         // Initialize the map
         function initMap() {
+
             // Initialize the map centered on New York City
             map = new google.maps.Map(document.getElementById('map'), {
                 zoom: 13,
@@ -181,20 +182,74 @@
             // Initial filter to show only accessible stations
             setStationFilter();
 
-            // Add a click listener to display station information
-            map.data.addListener('click', function(event) {
-                const stationName = event.feature.getProperty('stop_name');
-                const latitude = event.feature.getGeometry().get().lat();
-                const longitude = event.feature.getGeometry().get().lng();
-                document.getElementById('end').value = stationName;
-                endLocation = { lat: latitude, lng: longitude }; // Store coordinates
+            map.data.addListener('click', function (event) {
+                // Get clicked location's latitude and longitude
+                const latitude = event.latLng.lat();
+                const longitude = event.latLng.lng();
 
-                // Display the station name and coordinates in an info window
-                const infoWindow = new google.maps.InfoWindow({
-                    content: `<h3>${stationName}</h3><p>Latitude: ${latitude}<br>Longitude: ${longitude}</p>`,
-                    position: { lat: latitude, lng: longitude }
+                // Find the nearest station from accessibleStations
+                let nearestStation = null;
+                let shortestDistance = Infinity;
+
+                accessibleStations.forEach((station) => {
+                    const stationLat = parseFloat(station.gtfs_latitude);
+                    const stationLng = parseFloat(station.gtfs_longitude);
+
+                    // Skip if lat/lng are invalid
+                    if (isNaN(stationLat) || isNaN(stationLng)) {
+                        return;
+                    }
+
+                    // Calculate distance
+                    const distance = calculateDistance(
+                        { lat: latitude, lng: longitude },
+                        { lat: stationLat, lng: stationLng }
+                    );
+
+                    // Update nearest station
+                    if (distance < shortestDistance) {
+                        shortestDistance = distance;
+                        nearestStation = station;
+                    }
                 });
-                infoWindow.open(map);
+
+                if (nearestStation) {
+                    const reviews = nearestStation.reviews || [];
+                    const avgRating = nearestStation.avg_rating || "No rating available";
+
+                    // Format reviews for the popup
+                    const reviewContent = reviews
+                        .map(review => `<p><strong>${review.user}:</strong> ${review.comment}</p>`)
+                        .join("");
+
+                    // Construct InfoWindow content
+                    const infoContent = `
+                        <div style="font-size: 14px; max-width: 250px;">
+                            <strong>${nearestStation.stop_name}</strong><br>
+                            Train Lines: ${nearestStation.daytime_routes || "N/A"}<br>
+                            Rating: ${avgRating}<br>
+                            ${reviewContent || "<p>No reviews yet.</p>"}
+                            <a href="https://www.google.com/maps?q=${nearestStation.gtfs_latitude},${nearestStation.gtfs_longitude}" target="_blank">View on Google Maps</a>
+                        </div>
+                    `;
+
+                    // Close active InfoWindow if one exists
+                    if (activeInfoWindow) {
+                        activeInfoWindow.close();
+                    }
+
+                    // Create and display a new InfoWindow
+                    const infoWindow = new google.maps.InfoWindow({
+                        content: infoContent,
+                        position: { lat: parseFloat(nearestStation.gtfs_latitude), lng: parseFloat(nearestStation.gtfs_longitude) }
+                    });
+                    infoWindow.open(map);
+
+                    // Update the active InfoWindow reference
+                    activeInfoWindow = infoWindow;
+                } else {
+                    console.log("No nearby station found.");
+                }
             });
 
             const stationLat = parseFloat("{{ lat }}");
@@ -418,53 +473,6 @@
             });
         }
 
-        function searchNearbyStations(location) {
-            // Clear any existing subway markers
-            clearNearbyMarkers();
-
-            // Get the selected radius from the slider
-            const radius = parseFloat(document.getElementById('radius-slider').value) * 1609.34; // Convert miles to meters
-
-            // Search for nearby subway stations within the selected radius
-            const request = {
-                location: location,
-                radius: radius, // User-selected radius
-                type: ['subway_station']
-            };
-
-            placesService.nearbySearch(request, (results, status) => {
-                if (status === google.maps.places.PlacesServiceStatus.OK) {
-                    results.forEach(place => {
-                        const stationMarker = new google.maps.Marker({
-                            position: place.geometry.location,
-                            map: map,
-                            icon: 'https://maps.google.com/mapfiles/ms/icons/purple-dot.png',
-                            title: place.name
-                        });
-
-                        // Add click event listener to the marker
-                        stationMarker.addListener('click', function() {
-                            // Set the ending point input field to the station's name
-                            document.getElementById('end').value = place.name;
-
-                            // Store the station's coordinates
-                            endLocation = place.geometry.location;
-
-                            // Optional: Provide feedback to the user
-                            alert(`Ending point set to: ${place.name}`);
-
-                            // Optional: Center map on the clicked station
-                            // map.panTo(place.geometry.location);
-                        });
-
-                        nearbyStationMarkers.push(stationMarker);
-                    });
-                } else {
-                    alert("No nearby subway stations found.");
-                }
-            });
-        }
-
         // Clear nearby station markers
         function clearNearbyMarkers() {
             nearbyStationMarkers.forEach(marker => marker.setMap(null));
@@ -599,6 +607,40 @@
                                 title: station.stop_name
                             });
 
+                            // Add click listener for the InfoWindow
+                            stationMarker.addListener('click', function () {
+                                // Close any active InfoWindow
+                                if (activeInfoWindow) {
+                                    activeInfoWindow.close();
+                                }
+
+                                const reviews = station.reviews || [];
+                                const avgRating = station.avg_rating || "No rating available";
+
+                                // Format reviews for the popup
+                                const reviewContent = reviews
+                                    .map(review => `<p><strong>${review.user}:</strong> ${review.comment}</p>`)
+                                    .join("");
+
+                                // Construct InfoWindow content
+                                const infoContent = `
+                                    <div style="font-size: 14px; max-width: 250px;">
+                                        <strong>${station.stop_name}</strong><br>
+                                        Train Lines: ${station.daytime_routes || "N/A"}<br>
+                                        Rating: ${avgRating}<br>
+                                        ${reviewContent || "<p>No reviews yet.</p>"}
+                                        <a href="https://www.google.com/maps?q=${station.gtfs_latitude},${station.gtfs_longitude}" target="_blank">View on Google Maps</a>
+                                    </div>
+                                `;
+
+                                const infoWindow = new google.maps.InfoWindow({
+                                    content: infoContent
+                                });
+                                infoWindow.open(map, stationMarker);
+
+                                // Set the new active InfoWindow
+                                activeInfoWindow = infoWindow;
+                            });
                             // Add the station to the markers array to manage visibility
                             nearbyStationMarkers.push(stationMarker);
                         }
@@ -950,6 +992,7 @@
                 alert("Could not find accessible stations near origin or destination.");
             }
         }
+
 
     </script>
       
