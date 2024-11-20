@@ -260,7 +260,7 @@ def edit_profile(request):
 
     context = {
         "google_maps_api_key": settings.GOOGLE_MAPS_API_KEY,
-        "form" : form,
+        "form": form,
     }
 
     return render(request, "app/edit_profile.html", context)
