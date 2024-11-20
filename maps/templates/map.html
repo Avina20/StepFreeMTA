@@ -932,6 +932,11 @@
                 showAccessibleOnly = false;
                 showAllStations = false;
             }
+            // Reset the "Show Nearby Subway Stations" button text
+            const toggleStationsButton = document.getElementById('toggle-stations-button');
+            toggleStationsButton.innerText = 'Show Nearby Subway Stations';
+            stationsVisible = false; // Reset the visibility state
+
             setStationFilter();
         }
 
