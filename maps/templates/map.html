@@ -70,7 +70,7 @@
         </div>
         
         <!-- Toggle Nearby Stations Button -->
-        <button id="toggle-stations-button" onclick="toggleNearbyStations()">Show Nearby Subway Stations</button>
+        <button id="toggle-stations-button" onclick="toggleNearbyStations()">Show Nearby Accesible Subway Stations</button>
 
         <!-- Accessibility toggle button -->
         <div class="dropdown">
@@ -919,6 +919,9 @@
         }
 
         function setFilter(option) {
+
+            clearNearbyMarkers();
+
             if (option === 'accessible') {
                 showAccessibleOnly = true;
                 showAllStations = false;
