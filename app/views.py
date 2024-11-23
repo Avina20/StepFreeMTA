@@ -78,6 +78,7 @@ def logout_view(request):
 
 # Stations View
 class StationsView(generic.ListView):
+    paginate_by = 10
     model = Station
     template_name = "app/stations.html"
     context_object_name = "station_list"

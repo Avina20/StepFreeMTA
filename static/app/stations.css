@@ -170,3 +170,20 @@ p {
     font-size: 1em;
     margin-top: 20px;
 }
+
+.pagination .step-links {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+    margin-top: 20px;
+}
+
+.pagination .step-links a {
+    background-color: #1c75bc;
+    color: #fff;
+    padding: 10px 15px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
