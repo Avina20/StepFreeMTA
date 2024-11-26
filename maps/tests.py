@@ -64,24 +64,29 @@ class MapsViewTests(TestCase):
     def test_missing_start_or_end(self):
         """Test that missing start or end location returns an error."""
         response = self.client.post(
-            self.url, {"start": "", "end": "Central Park, New York, NY"}
+            self.url, 
+            {"start": "", "end": "Central Park, New York, NY"}
         )
         self.assertContains(
-            response, "Please enter both a starting point and an ending point."
+            response, 
+            "Please enter both a starting point and an ending point."
         )
 
         response = self.client.post(
-            self.url, {"start": "Times Square, New York, NY", "end": ""}
+            self.url, 
+            {"start": "Times Square, New York, NY", "end": ""}
         )
         self.assertContains(
-            response, "Please enter both a starting point and an ending point."
+            response, 
+            "Please enter both a starting point and an ending point."
         )
 
     def test_google_maps_api_key_in_context(self):
         """Test that the Google Maps API key is passed to the template context."""
         response = self.client.get(self.url)
         self.assertEqual(
-            response.context["google_maps_api_key"], settings.GOOGLE_MAPS_API_KEY
+            response.context["google_maps_api_key"], 
+            settings.GOOGLE_MAPS_API_KEY
         )
 
 
@@ -95,38 +100,46 @@ class ButtonsTest(TestCase):
 
     def test_login_button_exists(self):
         """Checks that the login button exists with the correct class."""
-        response = self.client.get(self.url)
         self.assertContains(
-            response,
-            f'<a class="nav-link" href="{self.login_url}"><i class="bi bi-box-arrow-in-right"></i> Login</a>',
+            self.client.get(self.url), 
+            (
+                '<a class="nav-link" href="{}">'
+                '<i class="bi bi-box-arrow-in-right"></i> Login</a>'
+            ).format(self.login_url),
             html=True,
         )
 
     def test_register_button_exists(self):
         """Checks that the register button exists with the correct class."""
-        response = self.client.get(self.url)
         self.assertContains(
-            response,
-            f'<a class="nav-link" href="{self.register_url}"><i class="bi bi-person-plus"></i> Register</a>',
+            self.client.get(self.url), 
+            (
+                '<a class="nav-link" href="{}">'
+                '<i class="bi bi-person-plus"></i> Register</a>'
+            ).format(self.register_url),
             html=True,
         )
 
     def test_logout_button_exists(self):
         """Checks that the logout button exists for authenticated users."""
         self.client.login(username="testuser", password="password")
-        response = self.client.get(self.url)
         self.assertContains(
-            response,
-            '<button type="submit" class="btn btn-danger"><i class="bi bi-box-arrow-right"></i> Logout</button>',
+            self.client.get(self.url), 
+            (
+                '<button type="submit" class="btn btn-danger">'
+                '<i class="bi bi-box-arrow-right"></i> Logout</button>'
+            ),
             html=True,
         )
 
     def test_authenticated_user_welcome_message(self):
         """Checks if a personalized welcome message is displayed for authenticated users."""
         self.client.login(username="testuser", password="password")
-        response = self.client.get(self.url)
         self.assertContains(
-            response,
-            '<i class="bi bi-person-circle"></i> Welcome, <strong>testuser</strong>',
+            self.client.get(self.url), 
+            (
+                '<i class="bi bi-person-circle"></i> Welcome, '
+                '<strong>testuser</strong>'
+            ),
             html=True,
         )
