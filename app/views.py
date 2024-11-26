@@ -6,7 +6,6 @@ from django.views import generic
 from django.conf import settings
 from django.db.models import F
 from .models import Station, Profile, Review
-from django.db.models import Avg
 from django.contrib.auth.decorators import login_required
 from .forms import ProfileUpdateForm, RatingForm
 from django.utils import timezone

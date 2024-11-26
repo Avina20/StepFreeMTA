@@ -89,7 +89,12 @@ class Review(models.Model):
 
     def __str__(self):
         return f"Review by {self.user} on {self.station}"
-    
+
     @classmethod
     def get_average_rating(cls, station_name):
-        return cls.objects.filter(station=station_name).aggregate(Avg('rating'))['rating__avg'] or 0
+        return (
+            cls.objects.filter(station=station_name).aggregate(Avg("rating"))[
+                "rating__avg"
+            ]
+            or 0
+        )
