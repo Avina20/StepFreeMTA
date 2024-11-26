@@ -98,7 +98,7 @@ class ButtonsTest(TestCase):
         response = self.client.get(self.url)
         self.assertContains(
             response,
-            '<a class="nav-link" href="{}"><i class="bi bi-box-arrow-in-right"></i> Login</a>'.format(self.login_url),
+            f'<a class="nav-link" href="{self.login_url}"><i class="bi bi-box-arrow-in-right"></i> Login</a>',
             html=True,
         )
 
@@ -107,7 +107,7 @@ class ButtonsTest(TestCase):
         response = self.client.get(self.url)
         self.assertContains(
             response,
-            '<a class="nav-link" href="{}"><i class="bi bi-person-plus"></i> Register</a>'.format(self.register_url),
+            f'<a class="nav-link" href="{self.register_url}"><i class="bi bi-person-plus"></i> Register</a>',
             html=True,
         )
 
