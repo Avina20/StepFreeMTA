@@ -32,7 +32,7 @@ body {
     margin: 0;
 }
 
-.navbar a, .go, .submit{
+.navbar a, .destination-buttons .submit{
     background-color: #4CAF50;
     text-decoration: none;
     color: white;
@@ -48,7 +48,7 @@ body {
     justify-content: center
 }
 
-.navbar a:hover, .go:hover, .submit:hover{
+.navbar a:hover, .destination-buttons, .submit:hover{
     background-color: #45a049;
 }
 
