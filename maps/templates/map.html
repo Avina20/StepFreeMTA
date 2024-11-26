@@ -266,14 +266,8 @@
             if (stationLat && stationLng) {
                 document.getElementById("start").value = stationName;
                 centerMapOnStation(stationLat, stationLng, stationName, map);
-
-                if (destStationLat && destStationLng) {
-                    document.getElementById("end").value = stationName;
-                    endLocation = { lat: destStationLat, lng: destStationLng };
-                    document.getElementById("end").value = stationName;
-                    findRoute();
-                }
-            } else {
+            } 
+            else {
                 // Try to get the user's current location on map load
                 if (navigator.geolocation) {
                     navigator.geolocation.getCurrentPosition(
@@ -307,6 +301,13 @@
                     );
                 }
             }
+            // Moved to new if statement to populate destination field
+            if (destStationLat && destStationLng) {
+                    document.getElementById("end").value = stationName;
+                    endLocation = { lat: destStationLat, lng: destStationLng };
+                    document.getElementById("end").value = stationName;
+                    findRoute();
+                }
 
             // Enable or Disable the "Show Nearby Subway Stations" Button
             const toggleStationsButton = document.getElementById('toggle-stations-button');

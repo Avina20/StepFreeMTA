@@ -90,7 +90,10 @@ def map_view(request):
         context.update({"lat": lat, "lng": lng, "station_name": station_name})
 
     if dest_lat and dest_lng:
-        context.update({"dest_lat": dest_lat, "dest_lng": dest_lng})
+        print(dest_lat + " " + dest_lng)
+        context.update(
+            {"dest_lat": dest_lat, "dest_lng": dest_lng, "station_name": station_name}
+        )
 
     # Check if user location is provided and find nearest accessible station
     if lat and lng:

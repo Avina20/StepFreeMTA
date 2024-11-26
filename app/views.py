@@ -155,12 +155,7 @@ def station_detail(request, station_id):
     ratings = station.rating.all()  # Get all ratings for this station
     # Calculate the average rating for this station
 
-    if ratings is None:
-        avg_rating = 0
-    else:
-        avg_rating = Review.objects.filter(station=station).aggregate(Avg("rating"))[
-            "rating__avg"
-        ]
+    avg_rating = Review.get_average_rating(station_name=station)
 
     # Find last 5 comments
     last_five_comments = (
