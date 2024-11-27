@@ -159,14 +159,23 @@ class StationsAccessibilityTest(TestCase):
         response = self.client.get(reverse("app:station_detail", args=[station.id]))
         self.assertContains(response, "Accessible: False")
 
-    def test_go_button_redirect(self):
+    def test_go_from_button_redirect(self):
         # Test clicking the "Go" button and ensure correct redirection to map view with coordinates # noqa: E501
         station = Station.objects.get(gtfs_stop_id="R03")  # Example: Astoria Blvd
         response = self.client.get(reverse("app:station_detail", args=[station.id]))
-        print(response)
         go_button_url = (
             reverse("maps:map_view")
             + f"?source_lat={station.gtfs_latitude}&source_lng={station.gtfs_longitude}&name={station.stop_name}"  # noqa: E501
+        )
+        self.assertContains(response, f'href="{go_button_url}"')
+
+    def test_go_to_button_redirect(self):
+        # Test clicking the "Go" button and ensure correct redirection to map view with coordinates # noqa: E501
+        station = Station.objects.get(gtfs_stop_id="R03")  # Example: Astoria Blvd
+        response = self.client.get(reverse("app:station_detail", args=[station.id]))
+        go_button_url = (
+            reverse("maps:map_view")
+            + f"?dest_lat={station.gtfs_latitude}&dest_lng={station.gtfs_longitude}&name={station.stop_name}"  # noqa: E501
         )
         self.assertContains(response, f'href="{go_button_url}"')
 
@@ -203,9 +212,12 @@ class ReviewTests(TestCase):
 
     def setUp(self):
         # Create a test user and a test station
+        User.objects.create_user(username="testuser2", password="password123")
+        User.objects.create_user(username="testuser3", password="password123")
         self.user = User.objects.create_user(
             username="testuser", password="password123"
         )
+
         self.station = Station.objects.get(gtfs_stop_id="R03")
         self.rate_url = reverse("app:station_detail", args=[self.station.id])
 
@@ -294,3 +306,36 @@ class ReviewTests(TestCase):
         self.assertEqual(
             response.status_code, 302
         )  # Check for a redirect after success
+
+    def test_average_rating_calculation(self):
+        self.client.login(username="testuser", password="password123")
+        self.client.post(self.rate_url, {"rating": 4, "comment": ""})
+        self.client.login(username="testuser2", password="password123")
+        self.client.post(self.rate_url, {"rating": 3, "comment": ""})
+        self.client.login(username="testuser3", password="password123")
+        self.client.post(self.rate_url, {"rating": 5, "comment": ""})
+
+        # Calculate the average rating manually
+        expected_average = (4 + 3 + 5) / 3  # Should be 4.0
+
+        # Get the average rating using the model method
+        calculated_average = Review.get_average_rating(station_name=self.station)
+
+        # Assert if the calculated average is correct
+        self.assertEqual(calculated_average, expected_average)
+
+    def test_average_rating_with_no_reviews(self):
+        # Delete all reviews to test empty case
+        Review.objects.all().delete()
+
+        # The average rating should be 0 when there are no reviews
+        self.assertEqual(Review.get_average_rating(station_name=self.station), 0)
+
+    def test_average_rating_with_one_review(self):
+        # Delete all reviews and add one review
+        Review.objects.all().delete()
+        self.client.login(username="testuser", password="password123")
+        self.client.post(self.rate_url, {"rating": 5, "comment": ""})
+
+        # The average rating should be the score of the single review
+        self.assertEqual(Review.get_average_rating(station_name=self.station), 5)

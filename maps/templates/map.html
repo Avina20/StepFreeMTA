@@ -14,7 +14,7 @@
 </head>
 
 <body>
-    <nav>
+    <!-- <nav>
         <h3>Find a Route on Google Maps</h3>
         {% if user.is_authenticated %}
         <h3>Hi, {{user.username}}</h3>
@@ -42,7 +42,93 @@
             <a href="{% url 'app:stations' %}"><button>Subway</button></a>
         </div>
         {% endif %}
-    </nav>
+    </nav> -->
+
+    <!-- Main Navigation Bar (Common for all users) -->
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <h3>StepFreeMTA</h3>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#mainNav" aria-controls="mainNav" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="mainNav">
+        <ul class="navbar-nav ml-auto">
+            <li class="nav-item">
+                <a class="nav-link" href="{% url 'app:alerts' %}">
+                    <i class="bi bi-bell"></i> Alerts
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="{% url 'notifications:inbox' %}">
+                    <i class="bi bi-bell-fill"></i> Notifications
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="{% url 'app:stations' %}">
+                    <i class="bi bi-subway"></i> Subway
+                </a>
+            </li>
+            {% if user.is_authenticated %}
+            <li class="nav-item">
+                <form method="POST" action="{% url 'app:logout' %}" class="d-inline">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger">
+                        <i class="bi bi-box-arrow-right"></i> Logout
+                    </button>
+                </form>
+            </li>
+            {% else %}
+            <li class="nav-item">
+                <a class="nav-link" href="{% url 'app:login' %}">
+                    <i class="bi bi-box-arrow-in-right"></i> Login
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="{% url 'app:register' %}">
+                    <i class="bi bi-person-plus"></i> Register
+                </a>
+            </li>
+            {% endif %}
+        </ul>
+    </div>
+</nav>
+
+<!-- Secondary Navigation Bar (Visible for logged-in users only) -->
+{% if user.is_authenticated %}
+<nav class="navbar navbar-expand-lg navbar-light bg-light">
+   
+        <h3 style="color: black;">
+            <i class="bi bi-person-circle"></i> Welcome, <strong>{{ user.username }}</strong>
+        </h3>
+        <div class="collapse navbar-collapse" id="userNav">
+            <ul class="navbar-nav ml-auto">
+                {% if user.is_superuser %}
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'admin_panel:user-list' %}">
+                        <i class="bi bi-speedometer2"></i> Admin Panel
+                    </a>
+                </li>
+                {% endif %}
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'messaging:inbox' %}">
+                        <i class="bi bi-envelope"></i> Messages
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'reporting:reporting_form' %}">
+                        <i class="bi bi-flag"></i> Report an Issue
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'app:profile' %}">
+                        <i class="bi bi-person"></i> Profile
+                    </a>
+                </li>
+            </ul>
+        </div>
+    
+</nav>
+{% endif %}
+
 
     <!-- Input fields and button for user input -->
     <div id="controls">
@@ -321,14 +407,8 @@
             if (stationLat && stationLng) {
                 document.getElementById("start").value = stationName;
                 centerMapOnStation(stationLat, stationLng, stationName, map);
-
-                if (destStationLat && destStationLng) {
-                    document.getElementById("end").value = stationName;
-                    endLocation = { lat: destStationLat, lng: destStationLng };
-                    document.getElementById("end").value = stationName;
-                    findRoute();
-                }
-            } else {
+            } 
+            else {
                 // Try to get the user's current location on map load
                 if (navigator.geolocation) {
                     navigator.geolocation.getCurrentPosition(
@@ -362,6 +442,13 @@
                     );
                 }
             }
+            // Moved to new if statement to populate destination field
+            if (destStationLat && destStationLng) {
+                    document.getElementById("end").value = stationName;
+                    endLocation = { lat: destStationLat, lng: destStationLng };
+                    document.getElementById("end").value = stationName;
+                    findRoute();
+                }
 
             // Enable or Disable the "Show Nearby Subway Stations" Button
             const toggleStationsButton = document.getElementById('toggle-stations-button');

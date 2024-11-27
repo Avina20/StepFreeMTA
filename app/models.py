@@ -1,6 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import User
 from django.utils import timezone
+from django.db.models import Avg
 
 
 class Station(models.Model):
@@ -47,6 +48,8 @@ class Profile(models.Model):
     birth_date = models.DateField(null=True, blank=True)
     home_latitude = models.FloatField(null=True, blank=True)
     home_longitude = models.FloatField(null=True, blank=True)
+    home_address = models.CharField(max_length=100, null=True, blank=True)
+    work_address = models.CharField(max_length=100, null=True, blank=True)
     work_latitude = models.FloatField(null=True, blank=True)
     work_longitude = models.FloatField(null=True, blank=True)
     fav_station = models.ForeignKey(
@@ -88,3 +91,12 @@ class Review(models.Model):
 
     def __str__(self):
         return f"Review by {self.user} on {self.station}"
+
+    @classmethod
+    def get_average_rating(cls, station_name):
+        return (
+            cls.objects.filter(station=station_name).aggregate(Avg("rating"))[
+                "rating__avg"
+            ]
+            or 0
+        )

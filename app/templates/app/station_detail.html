@@ -97,6 +97,9 @@
         </tr>
     </table>
     
-    <a class = "go" href="{% url 'maps:map_view' %}?source_lat={{ station.gtfs_latitude }}&source_lng={{ station.gtfs_longitude }}&name={{ station.stop_name }}">Go</a>
+    <div class = "destination-buttons">
+        <a href="{% url 'maps:map_view' %}?source_lat={{ station.gtfs_latitude }}&source_lng={{ station.gtfs_longitude }}&name={{ station.stop_name }}">Leave from station</a>
+        <a href="{% url 'maps:map_view' %}?dest_lat={{ station.gtfs_latitude }}&dest_lng={{ station.gtfs_longitude }}&name={{ station.stop_name }}">Go to station</a>
+    </div>
 </body>
 </html>
