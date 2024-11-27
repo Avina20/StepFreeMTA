@@ -12,10 +12,20 @@ class ProfileUpdateForm(forms.ModelForm):
             "work_latitude",
             "work_longitude",
             "fav_station",
+            "home_address",
+            "work_address"
         ]
         widgets = {
             "birth_date": forms.DateInput(attrs={"type": "date"}),
-            "fav_station": forms.Select(),  # Dropdown for stations
+            "fav_station": forms.Select(),  # Dropdown for stations,
+            "home_address": forms.TextInput(attrs={
+                'placeholder': 'Enter home location',
+                'onchange' : 'resetHomeLocation()'
+            }),
+            "work_address": forms.TextInput(attrs={
+                'placeholder': 'Enter work location',
+                'onchange' : 'resetWorkLocation()'
+            }),
         }
 
     def clean_home_latitude(self):
