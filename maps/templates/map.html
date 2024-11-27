@@ -49,9 +49,12 @@
         <label for="start">Starting Point:</label>
         <input type="text" id="start" placeholder="Enter starting location" onchange="resetStartLocation()">
         <button onclick="useCurrentLocation()">Use Current Location</button>
+        <button id="set-start-point" onclick="enableLocationSelection('start')">Set on Map</button>
+
 
         <label for="end">Ending Point:</label>
         <input type="text" id="end" placeholder="Enter destination" onchange="resetEndLocation()">
+        <button id="set-end-point" onclick="enableLocationSelection('end')">Set on Map</button>
         
         {% if user.is_authenticated %}
         <button id="saveFavoriteButton" onclick="saveFavorite()">
@@ -88,7 +91,7 @@
     <!-- Map container and route steps side by side -->
     <div id="map-container">
         <!-- Directions List on the left -->
-        <div id="route-steps">
+        <div id="route-steps" style="display: none;">
             <h3>Route Steps</h3>
             <ul id="directions-list"></ul>
 
@@ -118,6 +121,10 @@
         let endLocation = null;   // To store ending point 
         let stationVisibility = 'all'; // Initial state for accessible data layer
         let activeInfoWindow = null;
+        let settingLocation = null;
+        let mapClickListener = null;
+        let destinationMarker = null;
+        let startingPointMarker = null;
 
         // Define nearest accessible station data from Django context
         const nearestStationName = "{{ nearest_station_name|escapejs }}";
@@ -166,13 +173,61 @@
 
             initAutocomplete();
 
-            map.addListener("click", function(e) {
-                const clickLat = e.latLng.lat();
-                const clickLan = e.latLng.lng();
-                console.log("clicking",clickLat, clickLan);
-                endLocation = { lat: clickLat, lng: clickLan };
-                document.getElementById('end').value = `${clickLat}, ${clickLan}`;
+            // Set up the map click listener
+            mapClickListener = map.addListener('click', function (event) {
+                if (!settingLocation) {
+                    return; // Ignore clicks if not in selection mode
+                }
+
+                const selectedLocation = {
+                    lat: event.latLng.lat(),
+                    lng: event.latLng.lng(),
+                };
+
+                if (settingLocation === 'start') {
+                    startLocation = selectedLocation; // Update the global start location
+                    document.getElementById('start').value = `${selectedLocation.lat.toFixed(5)}, ${selectedLocation.lng.toFixed(5)}`;
+                    alert("Starting point set.");
+
+                    // Add or update the starting point marker
+                    if (startingPointMarker) {
+                        startingPointMarker.setMap(null); // Clear the previous marker
+                    }
+                    startingPointMarker = new google.maps.Marker({
+                        position: selectedLocation,
+                        map: map,
+                        title: "Starting Point",
+                        icon: "http://maps.google.com/mapfiles/markerA.png", // Purple pin
+                    });
+                } else if (settingLocation === 'end') {
+                    endLocation = selectedLocation; // Update the global end location
+                    document.getElementById('end').value = `${selectedLocation.lat.toFixed(5)}, ${selectedLocation.lng.toFixed(5)}`;
+                    alert("Destination set.");
+
+                    // Add or update the destination marker
+                    if (destinationMarker) {
+                        destinationMarker.setMap(null); // Clear the previous marker
+                    }
+                    destinationMarker = new google.maps.Marker({
+                        position: selectedLocation,
+                        map: map,
+                        title: "Destination",
+                        icon: "http://maps.google.com/mapfiles/markerB.png", // Red pin
+                    });
+                }
+
+                // Reset the selection state and restore cursor
+                settingLocation = null;
+                map.setOptions({ draggableCursor: null });
             });
+
+            // map.addListener("click", function(e) {
+            //     const clickLat = e.latLng.lat();
+            //     const clickLan = e.latLng.lng();
+            //     console.log("clicking",clickLat, clickLan);
+            //     endLocation = { lat: clickLat, lng: clickLan };
+            //     document.getElementById('end').value = `${clickLat}, ${clickLan}`;
+            // });
 
             // Load GeoJSON data for subway stations
             map.data.loadGeoJson(
@@ -343,6 +398,51 @@
             });
         }
 
+        function enableLocationSelection(type) {
+            if (type === 'start') {
+                alert("Click on the map to set the starting point.");
+                settingLocation = 'start';
+            } else if (type === 'end') {
+                alert("Click on the map to set the destination.");
+                settingLocation = 'end';
+            }
+
+            // Change the map cursor to indicate selection mode
+            map.setOptions({ draggableCursor: 'crosshair' });
+
+        }
+
+        // Add a click listener to the map for location selection
+        map.addListener('click', function (event) {
+            if (!settingLocation) {
+                return; // Exit if we're not in location selection mode
+            }
+
+            const selectedLocation = {
+                lat: event.latLng.lat(),
+                lng: event.latLng.lng()
+            };
+
+            if (settingLocation === 'start') {
+                startLocation = selectedLocation; // Update the global start location
+                document.getElementById('start').value = `${selectedLocation.lat.toFixed(5)}, ${selectedLocation.lng.toFixed(5)}`;
+                alert("Starting point set.");
+            } else if (settingLocation === 'end') {
+                endLocation = selectedLocation; // Update the global end location
+                document.getElementById('end').value = `${selectedLocation.lat.toFixed(5)}, ${selectedLocation.lng.toFixed(5)}`;
+                alert("Destination set.");
+            }
+
+            // Reset the selection state
+            settingLocation = null;
+
+            // Restore the default map cursor
+            map.setOptions({ draggableCursor: null });
+
+            // Re-enable map interactions if they were disabled
+            map.setOptions({ disableDoubleClickZoom: false });
+        });
+
         function useCurrentLocation() {
             if (navigator.geolocation) {
                 navigator.geolocation.getCurrentPosition(
@@ -509,9 +609,21 @@
                 } else {
                     findAccessibleStationsAndRoute(origin, destination);
                 }
+
+                // Show the route steps container
+                document.getElementById('route-steps').style.display = 'block';
+                // Adjust map container to allocate space for route steps
+                document.getElementById('map').style.width = '70%';
             } else {
                 console.log("Please enter both a starting point and an ending point.");
             }
+        }
+
+        function clearRoute() {
+            clearPolylines();
+            clearDirectionsRenderers();
+            document.getElementById('route-steps').style.display = 'none';
+            document.getElementById('map').style.width = '100%';
         }
 
         function geocodeAndFindAccessibleStations(origin, destination) {
