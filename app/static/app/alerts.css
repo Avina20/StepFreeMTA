@@ -156,7 +156,8 @@ button:hover, .go:hover {
     display: flex;
     flex-wrap: wrap;
     justify-content: center;
-    gap: 15px; /* Space between checkboxes */
+    row-gap: 20px; /* Vertical space between rows */
+    column-gap: 40px; /* Horizontal space between columns */
     margin-top: 10px;
 }
 
@@ -164,9 +165,9 @@ button:hover, .go:hover {
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 50px; /* Uniform width for each checkbox */
+    padding: 0 15px; /* Padding around each checkbox-label pair */
     text-align: center;
-    margin: 5px; /* Space between rows */
+    margin: 5px; /* Space between rows and columns */
 }
 
 .form-check-input {
