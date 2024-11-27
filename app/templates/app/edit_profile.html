@@ -15,13 +15,15 @@
             {{ form.birth_date }}
             
             <h2>Set Home Location</h2>
-            <p>Click on the map to set the location.</p>
+            <!-- <p>Click on the map to set the location.</p> -->
             <div id="home-map" style="width: 100%; height: 300px;"></div>
+            {{ form.home_address.label_tag }} {{ form.home_address }}
             {{ form.home_latitude.label_tag }} {{ form.home_latitude }}
             {{ form.home_longitude.label_tag }} {{ form.home_longitude }}
 
             <h2>Set Work Location</h2>
             <div id="work-map" style="width: 100%; height: 300px;"></div>
+            {{ form.work_address.label_tag }} {{ form.work_address }}
             {{ form.work_latitude.label_tag }} {{ form.work_latitude }}
             {{ form.work_longitude.label_tag }} {{ form.work_longitude }}
 
@@ -39,13 +41,15 @@
 
     <script>
         // JavaScript to integrate map (e.g., Google Maps API)
+        let homeMap, workMap, homeMarker, workMarker;
         function initMap() {
-            var homeMap = new google.maps.Map(document.getElementById("home-map"), {
+            
+            homeMap = new google.maps.Map(document.getElementById("home-map"), {
                 center: { lat: 40.7128, lng: -74.0060 },
                 zoom: 12
             });
             
-            var workMap = new google.maps.Map(document.getElementById("work-map"), {
+            workMap = new google.maps.Map(document.getElementById("work-map"), {
                 center: { lat: 40.7128, lng: -74.0060 },
                 zoom: 12
             });
@@ -53,17 +57,166 @@
             homeMap.addListener("click", function(e) {
                 document.getElementById("id_home_latitude").value = e.latLng.lat();
                 document.getElementById("id_home_longitude").value = e.latLng.lng();
+                const latlng = { lat: parseFloat(e.latLng.lat()), lng: parseFloat(e.latLng.lng()) };
+
+                if(homeMarker){
+                    homeMarker.setMap(null);
+                }
+                homeMarker = new google.maps.Marker({
+                    position: latlng, 
+                    map: homeMap, 
+                });
+
+                homeMap.setCenter(latlng);
+
+                const homeLocationInput = document.getElementById("id_home_address");
+                const geocoder = new google.maps.Geocoder();
+               
+                geocoder.geocode({ location: latlng }, (results, status) => {
+                    if (status === "OK") {
+                        if (results[0]) {
+                            // Display the address
+                            homeLocationInput.value =  results[0].formatted_address;
+                            console.log("Home location set:", results[0].formatted_address);
+                        } else {
+                            console.error("No results found");
+                        }
+                    } else {
+                        console.error("Geocoder failed due to: " + status);
+                    }
+                });
+
             });
     
             workMap.addListener("click", function(e) {
                 document.getElementById("id_work_latitude").value = e.latLng.lat();
                 document.getElementById("id_work_longitude").value = e.latLng.lng();
+                const latlng = { lat: parseFloat(e.latLng.lat()), lng: parseFloat(e.latLng.lng()) };
+
+                if(workMarker){
+                    workMarker.setMap(null);
+                }
+                workMarker = new google.maps.Marker({
+                    position: latlng, 
+                    map: workMap, 
+                });
+
+                workMap.setCenter(latlng);
+
+                const workLocationInput = document.getElementById("id_work_address");
+                const geocoder = new google.maps.Geocoder();
+                geocoder.geocode({ location: latlng }, (results, status) => {
+                    if (status === "OK") {
+                        if (results[0]) {
+                            // Display the address
+                            workLocationInput.value =  results[0].formatted_address;
+                            console.log("Work location set:", results[0].formatted_address);
+                        } else {
+                            console.error("No results found");
+                        }
+                    } else {
+                        console.error("Geocoder failed due to: " + status);
+                    }
+                });
             });
+
+            if(document.getElementById("id_home_latitude").value !== "" && document.getElementById("id_home_longitude").value !== ""){
+                const homeCenter = { lat: parseFloat(document.getElementById("id_home_latitude").value), lng: parseFloat(document.getElementById("id_home_longitude").value) };
+                homeMap.setCenter(homeCenter);
+                homeMarker = new google.maps.Marker({
+                    position: homeCenter, 
+                    map: homeMap, 
+                });
+            }
+
+            if(document.getElementById("id_work_latitude").value !== "" && document.getElementById("id_work_longitude").value !== ""){
+                const workCenter = { lat: parseFloat(document.getElementById("id_work_latitude").value), lng: parseFloat(document.getElementById("id_work_longitude").value) };
+                workMap.setCenter(workCenter);
+                workMarker = new google.maps.Marker({
+                    position: workCenter, 
+                    map: workMap, 
+                });
+            }
+
+            initAutocomplete();
         }
     
         // Validation logic for latitude and longitude
         function validateLatLon(lat, lon) {
             return lat >= -90 && lat <= 90 && lon >= -180 && lon <= 180;
+        }
+
+        function resetHomeLocation() {
+            homeLocation = null;
+        }
+
+        function resetWorkLocation() {
+            workLocation = null;
+        }
+
+        function initAutocomplete() {
+            const homeLocationInput = document.getElementById("id_home_address");
+            const workLocationInput = document.getElementById("id_work_address");
+
+            const homeAutocomplete = new google.maps.places.Autocomplete(homeLocationInput);
+            homeAutocomplete.setFields(["geometry", "formatted_address"]);
+            homeAutocomplete.setComponentRestrictions({ country: "us" });
+
+            homeAutocomplete.addListener("place_changed", () => {
+                const place = homeAutocomplete.getPlace();
+                if (place.geometry) {
+                    homeLocation = {
+                        lat: place.geometry.location.lat(),
+                        lng: place.geometry.location.lng(),
+                    };
+                    homeLocationInput.value = place.formatted_address; // Update input with formatted address
+                    document.getElementById("id_home_latitude").value = place.geometry.location.lat();
+                    document.getElementById("id_home_longitude").value = place.geometry.location.lng();
+
+                    if(homeMarker){
+                        homeMarker.setMap(null);
+                    }
+                    homeMarker = new google.maps.Marker({
+                        position: { lat: place.geometry.location.lat(), lng: place.geometry.location.lng() }, 
+                        map: homeMap, 
+                    });
+
+                    homeMap.setCenter({ lat: place.geometry.location.lat(), lng: place.geometry.location.lng() });
+
+                    console.log("Home location set:", homeLocation);
+                } else {
+                    alert("No details available for the selected location.");
+                }
+            });
+
+            const workAutocomplete = new google.maps.places.Autocomplete(workLocationInput);
+            workAutocomplete.setFields(["geometry", "formatted_address"]);
+
+            workAutocomplete.addListener("place_changed", () => {
+                const place = workAutocomplete.getPlace();
+                if (place.geometry) {
+                    workLocation = {
+                        lat: place.geometry.location.lat(),
+                        lng: place.geometry.location.lng(),
+                    };
+                    workLocationInput.value = place.formatted_address; // Update input with formatted address
+                    document.getElementById("id_work_latitude").value = place.geometry.location.lat();
+                    document.getElementById("id_work_longitude").value = place.geometry.location.lat();
+
+                    if(workMarker){
+                        workMarker.setMap(null);
+                    }
+                    workMarker = new google.maps.Marker({
+                        position: { lat: place.geometry.location.lat(), lng: place.geometry.location.lng() }, 
+                        map: workMap, 
+                    });
+
+                    workMap.setCenter({ lat: place.geometry.location.lat(), lng: place.geometry.location.lng() });
+                    console.log("Work location set:", workLocation);
+                } else {
+                    alert("No details available for the selected location.");
+                }
+            });
         }
     
         // Add event listener to validate before form submission
