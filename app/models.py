@@ -48,8 +48,8 @@ class Profile(models.Model):
     birth_date = models.DateField(null=True, blank=True)
     home_latitude = models.FloatField(null=True, blank=True)
     home_longitude = models.FloatField(null=True, blank=True)
-    home_address = models.CharField(max_length=100,null=True,blank=True)
-    work_address = models.CharField(max_length=100,null=True,blank=True)
+    home_address = models.CharField(max_length=100, null=True, blank=True)
+    work_address = models.CharField(max_length=100, null=True, blank=True)
     work_latitude = models.FloatField(null=True, blank=True)
     work_longitude = models.FloatField(null=True, blank=True)
     fav_station = models.ForeignKey(
