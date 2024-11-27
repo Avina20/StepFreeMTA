@@ -188,10 +188,10 @@ class ProfileView(generic.DetailView):
 
 def alerts_view(request):
     # Get selected lines from the request
-    selected_lines = request.GET.get('lines', '')
-    lines_list = selected_lines.split(',') if selected_lines else []
+    selected_lines = request.GET.get("lines", "")
+    lines_list = selected_lines.split(",") if selected_lines else []
 
-    search_patterns = [f'[{line}]' for line in lines_list]
+    search_patterns = [f"[{line}]" for line in lines_list]
 
     url = (
         "https://api-endpoint.mta.info/Dataservice/mtagtfsfeeds/camsys%2Fsubway-alerts"
@@ -212,12 +212,12 @@ def alerts_view(request):
                 header = (
                     alert.header_text.translation[0].text
                     if alert.header_text.translation
-                    else ''
+                    else ""
                 )
                 description = (
                     alert.description_text.translation[0].text
                     if alert.description_text.translation
-                    else ''
+                    else ""
                 )
 
                 # If lines are selected, filter based on the content
