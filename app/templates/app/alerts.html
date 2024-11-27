@@ -18,6 +18,108 @@
     </div>
 
     <div class="container mt-4">
+        <!-- Filters -->
+        <div id="filter-container" class="mb-4">
+            <h4>Filter by Line:</h4>
+            <form id="line-filter-form">
+                <!-- Checkboxes for each line -->
+                <div class="form-check form-check-inline">
+                    <!-- Line 1 -->
+                    <input class="form-check-input" type="checkbox" name="lines" value="1" id="line-1">
+                    <label class="form-check-label" for="line-1">1</label>
+
+                    <!-- Line 2 -->
+                    <input class="form-check-input" type="checkbox" name="lines" value="2" id="line-2">
+                    <label class="form-check-label" for="line-2">2</label>
+
+                    <!-- Line 3 -->
+                    <input class="form-check-input" type="checkbox" name="lines" value="3" id="line-3">
+                    <label class="form-check-label" for="line-3">3</label>
+
+                    <!-- Line 4 -->
+                    <input class="form-check-input" type="checkbox" name="lines" value="4" id="line-4">
+                    <label class="form-check-label" for="line-4">4</label>
+
+                    <!-- Line 5 -->
+                    <input class="form-check-input" type="checkbox" name="lines" value="5" id="line-5">
+                    <label class="form-check-label" for="line-5">5</label>
+
+                    <!-- Line 6 -->
+                    <input class="form-check-input" type="checkbox" name="lines" value="6" id="line-6">
+                    <label class="form-check-label" for="line-6">6</label>
+
+                    <!-- Line 7 -->
+                    <input class="form-check-input" type="checkbox" name="lines" value="7" id="line-7">
+                    <label class="form-check-label" for="line-7">7</label>
+
+                    <!-- Line A -->
+                    <input class="form-check-input" type="checkbox" name="lines" value="A" id="line-A">
+                    <label class="form-check-label" for="line-A">A</label>
+
+                    <!-- Line C -->
+                    <input class="form-check-input" type="checkbox" name="lines" value="C" id="line-C">
+                    <label class="form-check-label" for="line-C">C</label>
+
+                    <!-- Line E -->
+                    <input class="form-check-input" type="checkbox" name="lines" value="E" id="line-E">
+                    <label class="form-check-label" for="line-E">E</label>
+
+                    <!-- Line B -->
+                    <input class="form-check-input" type="checkbox" name="lines" value="B" id="line-B">
+                    <label class="form-check-label" for="line-B">B</label>
+
+                    <!-- Line D -->
+                    <input class="form-check-input" type="checkbox" name="lines" value="D" id="line-D">
+                    <label class="form-check-label" for="line-D">D</label>
+
+                    <!-- Line F -->
+                    <input class="form-check-input" type="checkbox" name="lines" value="F" id="line-F">
+                    <label class="form-check-label" for="line-F">F</label>
+
+                    <!-- Line M -->
+                    <input class="form-check-input" type="checkbox" name="lines" value="M" id="line-M">
+                    <label class="form-check-label" for="line-M">M</label>
+
+                    <!-- Line G -->
+                    <input class="form-check-input" type="checkbox" name="lines" value="G" id="line-G">
+                    <label class="form-check-label" for="line-G">G</label>
+
+                    <!-- Line J -->
+                    <input class="form-check-input" type="checkbox" name="lines" value="J" id="line-J">
+                    <label class="form-check-label" for="line-J">J</label>
+
+                    <!-- Line Z -->
+                    <input class="form-check-input" type="checkbox" name="lines" value="Z" id="line-Z">
+                    <label class="form-check-label" for="line-Z">Z</label>
+
+                    <!-- Line L -->
+                    <input class="form-check-input" type="checkbox" name="lines" value="L" id="line-L">
+                    <label class="form-check-label" for="line-L">L</label>
+
+                    <!-- Line N -->
+                    <input class="form-check-input" type="checkbox" name="lines" value="N" id="line-N">
+                    <label class="form-check-label" for="line-N">N</label>
+
+                    <!-- Line Q -->
+                    <input class="form-check-input" type="checkbox" name="lines" value="Q" id="line-Q">
+                    <label class="form-check-label" for="line-Q">Q</label>
+
+                    <!-- Line R -->
+                    <input class="form-check-input" type="checkbox" name="lines" value="R" id="line-R">
+                    <label class="form-check-label" for="line-R">R</label>
+
+                    <!-- Line W -->
+                    <input class="form-check-input" type="checkbox" name="lines" value="W" id="line-W">
+                    <label class="form-check-label" for="line-W">W</label>
+
+                    <!-- Line S -->
+                    <input class="form-check-input" type="checkbox" name="lines" value="S" id="line-S">
+                    <label class="form-check-label" for="line-S">S</label>
+                </div>
+                <button type="button" id="apply-filter-btn" class="btn btn-primary ml-2">Apply Filter</button>
+            </form>
+        </div>
+
         <!-- Alerts container to be updated with AJAX -->
         <div id="alerts-container">
             {% include "app/alerts_content.html" %}
@@ -27,10 +129,23 @@
     <script>
         // Function to fetch alerts and update the content
         function fetchAlerts() {
+            // Get selected lines
+            let selectedLines = [];
+            $('input[name="lines"]:checked').each(function() {
+                selectedLines.push($(this).val());
+            });
+
+            // Prepare data to send
+            let data = {};
+            if (selectedLines.length > 0) {
+                data.lines = selectedLines.join(',');
+            }
+
             $.ajax({
                 url: '{% url "app:alerts" %}', // Use Django's URL template tag
                 type: 'GET',
                 dataType: 'json',
+                data: data,
                 success: function(response) {
                     console.log("Full response:", response);
 
@@ -62,9 +177,21 @@
 
         // Fetch alerts when the page loads
         $(document).ready(function() {
+            // Fetch alerts initially
             fetchAlerts();
+
             // Set an interval to refresh alerts every 10 seconds (10000 milliseconds)
             setInterval(fetchAlerts, 10000);
+
+            // Apply filter button click handler
+            $('#apply-filter-btn').click(function() {
+                fetchAlerts();
+            });
+
+            // Optionally, fetch alerts whenever a checkbox is changed
+            $('input[name="lines"]').change(function() {
+                fetchAlerts();
+            });
         });
     </script>
 </body>

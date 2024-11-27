@@ -187,6 +187,12 @@ class ProfileView(generic.DetailView):
 
 
 def alerts_view(request):
+    # Get selected lines from the request
+    selected_lines = request.GET.get('lines', '')
+    lines_list = selected_lines.split(',') if selected_lines else []
+
+    search_patterns = [f'[{line}]' for line in lines_list]
+
     url = (
         "https://api-endpoint.mta.info/Dataservice/mtagtfsfeeds/camsys%2Fsubway-alerts"
     )
@@ -202,31 +208,37 @@ def alerts_view(request):
         for entity in feed.entity:
             if entity.HasField("alert"):
                 alert = entity.alert
-                informed_entities = []
-                for informed_entity in alert.informed_entity:
-                    informed_entities.append(
-                        {
-                            "route_id": informed_entity.route_id,
-                            "stop_id": informed_entity.stop_id,
-                        }
-                    )
+
                 header = (
                     alert.header_text.translation[0].text
                     if alert.header_text.translation
-                    else None
+                    else ''
                 )
                 description = (
                     alert.description_text.translation[0].text
                     if alert.description_text.translation
-                    else None
+                    else ''
                 )
-                alerts_data.append(
-                    {
-                        "header": header,
-                        "description": description,
-                        "informed_entities": informed_entities,
-                    }
-                )
+
+                # If lines are selected, filter based on the content
+                if lines_list:
+                    # Check if any of the search patterns are in the header
+                    if any(pattern in header for pattern in search_patterns):
+                        # Include this alert
+                        alerts_data.append(
+                            {
+                                "header": header,
+                                "description": description,
+                            }
+                        )
+                else:
+                    # No lines selected, include all alerts
+                    alerts_data.append(
+                        {
+                            "header": header,
+                            "description": description,
+                        }
+                    )
 
     except Exception as e:
         alerts_data = None
