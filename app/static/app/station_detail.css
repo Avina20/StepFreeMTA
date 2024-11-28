@@ -15,7 +15,7 @@ body {
     min-height: 100vh;
     padding: 20px;
 }
-.navbar {
+.navbar{
     width: 100%;
     display: flex;
     justify-content: space-between;
@@ -32,7 +32,7 @@ body {
     margin: 0;
 }
 
-.navbar a, .destination-buttons .submit{
+.navbar a, .destination-buttons a, .submit{
     background-color: #4CAF50;
     text-decoration: none;
     color: white;
@@ -48,8 +48,145 @@ body {
     justify-content: center
 }
 
-.navbar a:hover, .destination-buttons, .submit:hover{
+.navbar a:hover, .destination-buttons a:hover, .submit:hover{
     background-color: #45a049;
+}
+
+/*CSS for displaying reviews*/
+/* Basic page styling */
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f0f0f0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 0;
+    padding: 20px;
+}
+
+/* Container for the review section */
+.review-section {
+    width: 100%;
+    max-width: 800px;
+    background-color: #fff;
+    border-radius: 15px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    padding: 30px;
+    box-sizing: border-box;
+    text-align: center;
+}
+
+/* Heading for the review section */
+.review-section h1 {
+    color: #333;
+    margin-bottom: 20px;
+}
+
+/* Individual review card */
+.review-card {
+    background-color: #f9f9f9;
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    padding: 20px;
+    margin: 20px 0;
+    text-align: left;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+    transition: transform 0.3s ease;
+}
+
+/* Hover effect for review card */
+.review-card:hover {
+    transform: translateY(-5px);
+}
+
+/* Review header with user name and rating */
+.review-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+/* User name styling */
+.review-header h3 {
+    margin: 0;
+    color: #007BFF;
+}
+
+/* Rating styling */
+.rating {
+    font-size: 20px;
+    color: #FFD700; /* Gold color for stars */
+}
+
+/* Review text */
+.review-text {
+    font-size: 16px;
+    color: #555;
+    margin: 10px 0;
+}
+
+/* Review date */
+.review-date {
+    font-size: 14px;
+    color: #888;
+    text-align: right;
+}
+
+.star-rating {
+    font-size: 40px;
+    color: #FFD700;
+}
+
+
+/*CSS for review dropdown menu */
+.rating-container {
+    background-color: #fff;
+    padding: 30px;
+    border-radius: 10px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    width: 350px;
+    text-align: center;
+}
+
+.rating-dropdown {
+    width: 100%;
+    padding: 12px;
+    border: 2px solid #ccc;
+    border-radius: 8px;
+    font-size: 16px;
+    background-color: #fff;
+    outline: none;
+    appearance: none;  /* Remove default dropdown arrow */
+    cursor: pointer;
+    transition: border-color 0.3s ease;
+}
+
+.rating-container select {
+    background-image: linear-gradient(45deg, transparent 50%, gray 50%), linear-gradient(135deg, gray 50%, transparent 50%);
+    background-position: calc(100% - 20px) calc(50% - 3px), calc(100% - 15px) calc(50% - 3px);
+    background-size: 5px 5px;
+    background-repeat: no-repeat;
+}
+
+.rating-dropdown:focus {
+    border-color: #007BFF;
+    box-shadow: 0 0 8px rgba(0, 123, 255, 0.3);
+}
+
+/*CSS for review text box */
+.review-area{
+    background-color: #fff;
+    padding: 10px;
+    border-radius: 5px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    width: 300px;
+    text-align: left;
+}
+
+.review-area:focus{
+    border-color: #007BFF;
+    box-shadow: 0 0 8px rgba(0, 123, 255, 0.3);
 }
 
 /* Container */
@@ -129,7 +266,7 @@ tr:hover td {
 .submit-container {
     display: flex;
     justify-content: center;
-    margin-top: 20px;
+    margin-top: 5px;
 }
 
 .button {

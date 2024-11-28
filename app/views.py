@@ -133,7 +133,8 @@ def station_detail(request, station_id):
                     rating.comment = form.cleaned_data["comment"]
                     if rating.comment == "":
                         rating.comment = prev_comment
-                    rating.created_at = timezone.now()
+                    else:
+                        rating.created_at = timezone.now()
                     rating.save()
                 else:
                     rating = form.save(commit=False)

@@ -15,7 +15,7 @@ body {
     min-height: 100vh;
     padding: 20px;
 }
-.navbar {
+.navbar{
     width: 100%;
     display: flex;
     justify-content: space-between;
@@ -32,7 +32,7 @@ body {
     margin: 0;
 }
 
-.navbar a, .destination-buttons .submit{
+.navbar a, .destination-buttons a, .submit{
     background-color: #4CAF50;
     text-decoration: none;
     color: white;
@@ -48,8 +48,36 @@ body {
     justify-content: center
 }
 
-.navbar a:hover, .destination-buttons, .submit:hover{
+.navbar a:hover, .destination-buttons a:hover, .submit:hover{
     background-color: #45a049;
+}
+
+/*CSS for review dropdown menu */
+.dropdown{
+    color: rgb(0, 0, 0);
+    text-decoration: none;
+    padding: 5px 5px;
+    display: inline-block;
+    font-size: 16px;
+}
+
+.dropdown:hover {
+    background-color: #555;
+}
+
+/*CSS for review text box */
+.review-area{
+    background-color: #fff;
+    padding: 30px;
+    border-radius: 10px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    width: 400px;
+    text-align: center;
+}
+
+.review-area:focus{
+    border-color: #007BFF;
+    box-shadow: 0 0 8px rgba(0, 123, 255, 0.3);
 }
 
 /* Container */
@@ -129,7 +157,7 @@ tr:hover td {
 .submit-container {
     display: flex;
     justify-content: center;
-    margin-top: 20px;
+    margin-top: 5px;
 }
 
 .button {

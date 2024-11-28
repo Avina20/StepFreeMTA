@@ -10,26 +10,54 @@
 <body>
     <div class="navbar">
         <h1>{{ station.stop_name }}</h1>
-        <a href="{% url 'app:stations' %}" class="nav-link">Back</a>
+        <a href="{% url 'app:stations' %}">Back</a>
     </div>
     
     <p>GTFS Stop ID: {{ station.gtfs_stop_id }} <br>
     Station ID: {{ station.station_id }} <br>
      Accessible: {{ station.ada }}</p>
-    
+
     <h2>Ratings</h2>
     {% if avg_rating %}
+        <div class="star-rating" id="starRating"></div>
+        <script>
+            const rating = parseFloat('{{ avg_rating|default:"0" }}');;
+
+            function renderStars(rating) {
+                console.log(rating);
+                const starContainer = document.getElementById('starRating');
+                starContainer.innerHTML = '';  // Clear any existing content
+
+                // Loop to create stars based on the rating
+                for (let i = 1; i <= 5; i++) {
+                    if (i <= Math.floor(rating)) {
+                        // Full star
+                        starContainer.innerHTML += '★';
+                    } else if (i === Math.ceil(rating) && rating % 1 >= 0.5) {
+                        // Half star
+                        starContainer.innerHTML += '<span class="half">★</span>';
+                    } else {
+                        // Empty star
+                        starContainer.innerHTML += '☆';
+                    }
+                }
+            }
+            window.onload(renderStars(rating))
+            setInterval(renderStars(rating), 2000)
+        </script>
         <p>Station Average Rating: <strong>{{ avg_rating|floatformat:1}} / 5</strong></p>
     {% else %}
         <p>No ratings yet</p>
     {% endif %}
-
-    {% for recent_comment in comments %}
-        <p>{{ recent_comment.comment }} - {{ recent_comment.created_at }}</p>
-    {% empty %}
-        <p>No comments to display</p>
-    {% endfor %}
-        
+    <div class="review-card">
+        {% for recent_comment in comments %}
+            <p>{{ recent_comment.comment }} - {{ recent_comment.created_at }}</p>
+        {% empty %}
+            <p>No comments to display</p>
+        {% endfor %}
+    </div>
+    
+    <div class="rating-container">
     <h2>Leave a Rating</h2>
     {% if user.is_authenticated %}
         {% if reviewed %}
@@ -40,23 +68,27 @@
         <form method="post">
         {% csrf_token %}
         <label for="rating">Select Rating (1-5):</label>
-        <select name="rating" id="rating">
-            <option value="1">1 - Poor</option>
-            <option value="2">2 - Fair</option>
-            <option value="3">3 - Good</option>
-            <option value="4">4 - Very Good</option>
-            <option value="5">5 - Excellent</option>
+        <select class="rating-dropdown" name="rating" id="rating">
+            <option value="" disabled selected>Select a rating</option>
+            <option value="5">★★★★★ - Excellent</option>
+            <option value="4">★★★★☆ - Very Good</option>
+            <option value="3">★★★☆☆ - Average</option>
+            <option value="2">★★☆☆☆ - Poor</option>
+            <option value="1">★☆☆☆☆ - Very Poor</option>
         </select>
         <label for ='comment'>Leave a comment.</label>
-            <textarea id="comment" name="comment" maxlength="255" rows="2" cols="50" placeholder="Write your comment here..."></textarea>
+            <textarea class="review-area" id="comment" name="comment" maxlength="255" rows="1" cols="50" placeholder="Write your comment here..."></textarea>
         <div class="submit-container">
-            <br><button type="submit" class="submit">Submit Review</button>
+            <br><button class="submit">Submit Review</button>
         </div>
         </form>
     {% else %}
         <p>Please <a href="{% url 'app:login' %}">log in</a> to leave a review.</p>
     {% endif %}
+    </div>
     
+    <br>
+
     <h2>Station Details</h2>
     <table border="1">
         <tr>
@@ -97,9 +129,14 @@
         </tr>
     </table>
     
-    <div class = "destination-buttons">
+    <div class="destination-buttons">
         <a href="{% url 'maps:map_view' %}?source_lat={{ station.gtfs_latitude }}&source_lng={{ station.gtfs_longitude }}&name={{ station.stop_name }}">Leave from station</a>
         <a href="{% url 'maps:map_view' %}?dest_lat={{ station.gtfs_latitude }}&dest_lng={{ station.gtfs_longitude }}&name={{ station.stop_name }}">Go to station</a>
     </div>
 </body>
 </html>
+
+<script>
+// Average rating (replace this with your dynamic value)
+
+</script>
