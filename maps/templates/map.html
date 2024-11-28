@@ -135,12 +135,16 @@
         <label for="start">Starting Point:</label>
         <input type="text" id="start" placeholder="Enter starting location" onchange="resetStartLocation()">
         <button onclick="useCurrentLocation()">Use Current Location</button>
-        <button id="set-start-point" onclick="enableLocationSelection('start')">Set on Map</button>
+        <button id="set-start-point" onclick="enableLocationSelection('start')">
+            <img src="http://maps.google.com/mapfiles/markerA.png">
+        </button>
 
 
         <label for="end">Ending Point:</label>
         <input type="text" id="end" placeholder="Enter destination" onchange="resetEndLocation()">
-        <button id="set-end-point" onclick="enableLocationSelection('end')">Set on Map</button>
+        <button id="set-end-point" onclick="enableLocationSelection('end')">
+            <img src="http://maps.google.com/mapfiles/markerB.png">
+        </button>
         
         {% if user.is_authenticated %}
         <button id="saveFavoriteButton" onclick="saveFavorite()">
