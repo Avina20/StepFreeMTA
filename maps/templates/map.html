@@ -442,11 +442,11 @@
                     );
                 }
             }
+            
             // Moved to new if statement to populate destination field
             if (destStationLat && destStationLng) {
                     document.getElementById("end").value = stationName;
                     endLocation = { lat: destStationLat, lng: destStationLng };
-                    document.getElementById("end").value = stationName;
                     findRoute();
                 }
 
