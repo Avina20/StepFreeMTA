@@ -206,7 +206,7 @@ class StationsViewTest(TestCase):
         response = StationsView.as_view()(request)
 
         self.assertEqual(response.status_code, 200)
-        self.assertQuerysetEqual(
+        self.assertQuerySetEqual(
             response.context_data["station_list"],
             [self.station2, self.station1, self.station3],  # Ordered alphabetically
             transform=lambda x: x,  # Avoid conversion to strings
