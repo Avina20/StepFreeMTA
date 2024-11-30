@@ -4,6 +4,8 @@ from .models import Station, Review
 from django.contrib.auth.models import User
 from django.conf import settings
 import json
+from django.test import RequestFactory
+from app.views import StationsView, StationDetailView
 
 
 class LoginViewTest(TestCase):
@@ -113,6 +115,113 @@ class LogoutTest(TestCase):
         response = self.client.get(self.url)
         self.assertEqual(response.status_code, 403)
         self.assertTrue(response.wsgi_request.user.is_authenticated)
+
+
+class StationsViewTest(TestCase):
+    def setUp(self):
+        # Create test data
+        self.station1 = Station.objects.create(
+            station_id=1,
+            stop_name="Times Square",
+            gtfs_stop_id="R01",
+            complex_id=1,
+            division="BMT",
+            line="Astoria",
+            borough="Q",
+            cbd=True,
+            daytime_routes="N W",
+            structure="Elevated",
+            gtfs_latitude=40.775036,
+            gtfs_longitude=-73.912034,
+            north_direction_label="Last Stop",
+            south_direction_label="Manhattan",
+            ada=True,
+            ada_northbound=False,
+            ada_southbound=True,
+            georeference_latitude=40.775036,
+            georeference_longitude=-73.912034,
+            ada_notes="Elevator available at entrance.",
+            computed_region_yamh_8v7k="123",
+            computed_region_wbg7_3whc="456",
+            computed_region_kjdx_g34t="789",
+        )
+
+        self.station2 = Station.objects.create(
+            station_id=2,
+            stop_name="Grand Central",
+            gtfs_stop_id="R01",
+            complex_id=1,
+            division="BMT",
+            line="Astoria",
+            borough="Q",
+            cbd=True,
+            daytime_routes="N W",
+            structure="Elevated",
+            gtfs_latitude=40.775036,
+            gtfs_longitude=-73.912034,
+            north_direction_label="Last Stop",
+            south_direction_label="Manhattan",
+            ada=True,
+            ada_northbound=False,
+            ada_southbound=True,
+            georeference_latitude=40.775036,
+            georeference_longitude=-73.912034,
+            ada_notes="Elevator available at entrance.",
+            computed_region_yamh_8v7k="123",
+            computed_region_wbg7_3whc="456",
+            computed_region_kjdx_g34t="789",
+        )
+
+        self.station3 = Station.objects.create(
+            station_id=3,
+            stop_name="Union Square",
+            gtfs_stop_id="R01",
+            complex_id=1,
+            division="BMT",
+            line="Astoria",
+            borough="Q",
+            cbd=True,
+            daytime_routes="N W",
+            structure="Elevated",
+            gtfs_latitude=40.775036,
+            gtfs_longitude=-73.912034,
+            north_direction_label="Last Stop",
+            south_direction_label="Manhattan",
+            ada=True,
+            ada_northbound=False,
+            ada_southbound=True,
+            georeference_latitude=40.775036,
+            georeference_longitude=-73.912034,
+            ada_notes="Elevator available at entrance.",
+            computed_region_yamh_8v7k="123",
+            computed_region_wbg7_3whc="456",
+            computed_region_kjdx_g34t="789",
+        )
+
+        self.factory = RequestFactory()
+
+    def test_stations_view_all_stations(self):
+        # Test that all stations are returned when no query is provided.
+        request = self.factory.get(reverse("app:stations"))
+        response = StationsView.as_view()(request)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertQuerysetEqual(
+            response.context_data["station_list"],
+            [self.station2, self.station1, self.station3],  # Ordered alphabetically
+            transform=lambda x: x,  # Avoid conversion to strings
+        )
+
+    def test_station_detail_view(self):
+        # Test that the StationDetailView displays the correct station.
+        url = reverse(
+            "app:station_detail", kwargs={"station_id": self.station1.station_id}
+        )
+        request = self.factory.get(url)
+        response = StationDetailView.as_view()(request, pk=self.station1.station_id)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.context_data["station"], self.station1)
 
 
 class StationsAccessibilityTest(TestCase):
