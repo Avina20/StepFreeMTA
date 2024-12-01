@@ -121,50 +121,44 @@
 
         <!-- Alerts container to be updated with AJAX -->
         <div id="alerts-container">
+            <!-- Initial content can be empty or include static alerts -->
             {% include "app/alerts_content.html" %}
         </div>
     </div>
 
     <script>
-        // Function to fetch alerts and update the content
         function fetchAlerts() {
-            // Get selected lines
             let selectedLines = [];
             $('input[name="lines"]:checked').each(function() {
                 selectedLines.push($(this).val());
             });
 
-            // Prepare data to send
             let data = {};
             if (selectedLines.length > 0) {
                 data.lines = selectedLines.join(',');
             }
 
             $.ajax({
-                url: '{% url "app:alerts" %}', // Use Django's URL template tag
+                url: '{% url "app:alerts" %}',
                 type: 'GET',
                 dataType: 'json',
                 data: data,
                 success: function(response) {
-                    console.log("Full response:", response);
-
                     if (response.alerts_data && response.alerts_data.length > 0) {
                         $('#alerts-container').html('');
-
                         let alertContent = '<div class="list-group">';
                         response.alerts_data.forEach(function(alert) {
+                            let header = alert.header || "";
+                            let description = alert.description || "";
                             alertContent += `
                             <div class="list-group-item mb-3">
-                                <h4>${alert.header}</h4>
-                                ${alert.description ? `<p>${alert.description}</p>` : ''}
-                            </div>
-                            `;
+                                <h4>${replaceLinesWithIcons(header)}</h4>
+                                ${description ? `<p>${replaceLinesWithIcons(description)}</p>` : ''}
+                            </div>`;
                         });
                         alertContent += '</div>';
-
                         $('#alerts-container').html(alertContent);
                     } else {
-                        console.log("No alerts available in response.");
                         $('#alerts-container').html('<p>No alerts available at the moment. Please check back later.</p>');
                     }
                 },
@@ -174,15 +168,42 @@
             });
         }
 
-        // Fetch alerts when the page loads
+        function replaceLinesWithIcons(text) {
+            const lineColors = {
+                '1': '#EE352E',
+                '2': '#EE352E',
+                '3': '#EE352E',
+                '4': '#00933C',
+                '5': '#00933C',
+                '6': '#00933C',
+                '7': '#B933AD',
+                'A': '#0039A6',
+                'C': '#0039A6',
+                'E': '#0039A6',
+                'B': '#FF6319',
+                'D': '#FF6319',
+                'F': '#FF6319',
+                'M': '#FF6319',
+                'G': '#6CBE45',
+                'J': '#996633',
+                'Z': '#996633',
+                'L': '#A7A9AC',
+                'N': '#FCCC0A',
+                'Q': '#FCCC0A',
+                'R': '#FCCC0A',
+                'W': '#FCCC0A',
+                'S': '#808183'
+            };
+
+            return text.replace(/\[(\w+)\]/g, function(match, line) {
+                const color = lineColors[line] || '#000000';
+                return `<span class="line-icon" style="background-color: ${color}; color: white; padding: 2px 6px; border-radius: 50%; font-size: 12px;">${line}</span>`;
+            });
+        }
+
         $(document).ready(function() {
-            // Fetch alerts initially
             fetchAlerts();
-
-            // Set an interval to refresh alerts every 10 seconds (10000 milliseconds)
-            setInterval(fetchAlerts, 10000);
-
-            // Optionally, fetch alerts whenever a checkbox is changed
+            setInterval(fetchAlerts, 10000); // Refresh every 10 seconds
             $('input[name="lines"]').change(function() {
                 fetchAlerts();
             });
