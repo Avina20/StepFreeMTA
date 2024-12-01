@@ -31,7 +31,7 @@
     {% if station_list %}
         <ul>
         {% for s in station_list %}
-            <li><a href="{% url 'app:station_detail' s.id %}">{{ s.stop_name }}</a></li>
+            <li><a href="{% url 'app:station_detail' s.id %}">{{ s.stop_name }} - {{ s.line }}</a></li>
         {% endfor %}
         </ul>
     {% else %}
