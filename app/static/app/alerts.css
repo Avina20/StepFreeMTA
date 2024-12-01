@@ -190,3 +190,19 @@ button:hover, .go:hover {
     margin-bottom: 20px;
     text-align: center;
 }
+
+/* Line Icon Styling */
+.line-icon {
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 0.9em;
+    font-weight: bold;
+    text-align: center;
+    line-height: 1;
+    margin: 0 5px;
+    color: #ffffff;
+    height: 24px;
+    width: 24px;
+    box-sizing: border-box;
+}
