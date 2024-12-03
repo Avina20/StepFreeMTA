@@ -464,6 +464,37 @@
                 toggleStationsButton.disabled = true;
                 toggleStationsButton.innerText = 'Geolocation not available';
             }
+
+            // Add a click listener to the map for location selection
+            map.addListener('click', function (event) {
+                if (!settingLocation) {
+                    return; // Exit if we're not in location selection mode
+                }
+
+                const selectedLocation = {
+                    lat: event.latLng.lat(),
+                    lng: event.latLng.lng()
+                };
+
+                if (settingLocation === 'start') {
+                    startLocation = selectedLocation; // Update the global start location
+                    document.getElementById('start').value = `${selectedLocation.lat.toFixed(5)}, ${selectedLocation.lng.toFixed(5)}`;
+                    alert("Starting point set.");
+                } else if (settingLocation === 'end') {
+                    endLocation = selectedLocation; // Update the global end location
+                    document.getElementById('end').value = `${selectedLocation.lat.toFixed(5)}, ${selectedLocation.lng.toFixed(5)}`;
+                    alert("Destination set.");
+                }
+
+                // Reset the selection state
+                settingLocation = null;
+
+                // Restore the default map cursor
+                map.setOptions({ draggableCursor: null });
+
+                // Re-enable map interactions if they were disabled
+                map.setOptions({ disableDoubleClickZoom: false });
+            });
         }
         window.initMap = initMap;
 
@@ -503,36 +534,6 @@
 
         }
 
-        // Add a click listener to the map for location selection
-        map.addListener('click', function (event) {
-            if (!settingLocation) {
-                return; // Exit if we're not in location selection mode
-            }
-
-            const selectedLocation = {
-                lat: event.latLng.lat(),
-                lng: event.latLng.lng()
-            };
-
-            if (settingLocation === 'start') {
-                startLocation = selectedLocation; // Update the global start location
-                document.getElementById('start').value = `${selectedLocation.lat.toFixed(5)}, ${selectedLocation.lng.toFixed(5)}`;
-                alert("Starting point set.");
-            } else if (settingLocation === 'end') {
-                endLocation = selectedLocation; // Update the global end location
-                document.getElementById('end').value = `${selectedLocation.lat.toFixed(5)}, ${selectedLocation.lng.toFixed(5)}`;
-                alert("Destination set.");
-            }
-
-            // Reset the selection state
-            settingLocation = null;
-
-            // Restore the default map cursor
-            map.setOptions({ draggableCursor: null });
-
-            // Re-enable map interactions if they were disabled
-            map.setOptions({ disableDoubleClickZoom: false });
-        });
 
         function useCurrentLocation() {
             if (navigator.geolocation) {
