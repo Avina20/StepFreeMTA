@@ -101,7 +101,7 @@ button[name="return"] {
 }
 
 /* Link label */
-label[for="register"] {
+label[for="register"], label[for="return"] {
     display: block;
     text-align: center;
     font-size: 14px;
