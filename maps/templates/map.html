@@ -360,7 +360,7 @@
 
                 if (nearestStation) {
                     const reviews = nearestStation.reviews || [];
-                    const avgRating = nearestStation.avg_rating || "No rating available";
+                    const avgRating = nearestStation.avg_rating ? `${nearestStation.avg_rating}/5` : "No rating available";
 
                     // Format reviews for the popup
                     const reviewContent = reviews
@@ -819,7 +819,7 @@
                                 }
 
                                 const reviews = station.reviews || [];
-                                const avgRating = station.avg_rating || "No rating available";
+                                const avgRating = station.avg_rating ? `${station.avg_rating}/5` : "No rating available";
 
                                 // Format reviews for the popup
                                 const reviewContent = reviews
