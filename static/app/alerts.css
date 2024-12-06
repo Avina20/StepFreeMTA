@@ -171,6 +171,7 @@ button:hover, .go:hover {
 }
 
 .form-check-input {
+    display: none;
     margin-right: 8px; /* Space between checkbox and label */
     transform: scale(1.2); /* Slightly enlarge checkboxes */
 }
@@ -179,7 +180,18 @@ button:hover, .go:hover {
     font-weight: bold;
     color: #005b96;
     font-size: 14px;
+    margin: 0 5px;
+    border: 1px solid black;
+    height: 22px;
+    width: 22px;
+    border-radius:50%;
 }
+
+.form-check-input:checked + .form-check-label{
+    background-color: #45a049;
+    color: white;
+}
+
 
 /* Adjust container alignment and size */
 #filter-container {
@@ -189,4 +201,20 @@ button:hover, .go:hover {
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
     margin-bottom: 20px;
     text-align: center;
+}
+
+/* Line Icon Styling */
+.line-icon {
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 0.9em;
+    font-weight: bold;
+    text-align: center;
+    line-height: 1;
+    margin: 0 5px;
+    color: #ffffff;
+    height: 24px;
+    width: 24px;
+    box-sizing: border-box;
 }
